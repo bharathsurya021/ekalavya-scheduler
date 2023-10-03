@@ -1,12 +1,14 @@
-import React from "react";
-import { BrowserRouter } from "react-router-dom";
-import Router from "./routes";
-
+import React from 'react';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import Router from './routes';
+import { baselightTheme } from './themes/DefaultColors';
 function App() {
+  const theme = baselightTheme;
   return (
-    <BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Router />
-    </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
