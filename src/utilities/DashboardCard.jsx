@@ -13,7 +13,11 @@ const DashboardCard = ({
   middlecontent,
 }) => {
   return (
-    <Card sx={{ padding: 0 }} elevation={9} variant={undefined}>
+    <Card
+      sx={{ padding: '16px', minHeight: '80vh' }}
+      elevation={9}
+      variant={undefined}
+    >
       {cardheading ? (
         <CardContent>
           <Typography variant="h5">{headtitle}</Typography>
