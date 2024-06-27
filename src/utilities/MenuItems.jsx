@@ -9,16 +9,16 @@ const MenuItems = [
     path: '/dashboard',
     icon: DashboardOutlined,
   },
-  {
-    label: 'Content Manager',
-    path: '/cms',
-    icon: LibraryBooksOutlined,
-  },
-  {
-    label: 'Calendar',
-    path: '/calendar',
-    icon: CalendarMonthOutlined,
-  },
+  // {
+  //   label: 'Content Manager',
+  //   path: '/cms',
+  //   icon: LibraryBooksOutlined,
+  // },
+  // {
+  //   label: 'Calendar',
+  //   path: '/calendar',
+  //   icon: CalendarMonthOutlined,
+  // },
 ];
 
 export default MenuItems;

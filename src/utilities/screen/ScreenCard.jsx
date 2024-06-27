@@ -33,7 +33,6 @@ const ScreenCard = ({ title, id, onOptionClick }) => {
           <Typography variant="h6" style={{ flexGrow: 1 }}>
             {title}
           </Typography>
-          {/* <Typography>ID: {id}</Typography> */}
           <IconButton
             aria-controls="screen-options-menu"
             aria-haspopup="true"
@@ -49,10 +48,11 @@ const ScreenCard = ({ title, id, onOptionClick }) => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={() => onOptionClick('Rename')}>Rename</MenuItem>
-          <MenuItem onClick={() => onOptionClick('Edit')}>Edit</MenuItem>
-          <MenuItem onClick={() => onOptionClick('Preview')}>Preview</MenuItem>
-          <MenuItem onClick={() => onOptionClick('Delete')}>Delete</MenuItem>
+          <MenuItem onClick={() => { onOptionClick('View'); handleMenuClose(); }}>View</MenuItem>
+          <MenuItem onClick={() => { onOptionClick('Rename'); handleMenuClose(); }}>Rename</MenuItem>
+          <MenuItem onClick={() => { onOptionClick('Edit'); handleMenuClose(); }}>Edit</MenuItem>
+          <MenuItem onClick={() => { onOptionClick('Preview'); handleMenuClose(); }}>Preview</MenuItem>
+          <MenuItem onClick={() => { onOptionClick('Delete'); handleMenuClose(); }}>Delete</MenuItem>
         </Menu>
       </CardContent>
     </Card>

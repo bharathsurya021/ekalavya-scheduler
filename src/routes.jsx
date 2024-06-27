@@ -6,8 +6,7 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/Signup';
 import Error from './pages/Error';
 import Dashboard from './pages/Dashboard';
-import ContentManager from './pages/ContentManager';
-import Calender from './pages/Calender';
+import CalendarScheduler from './pages/Scheduler';
 const Router = () => {
   const routes = useRoutes([
     {
@@ -26,8 +25,7 @@ const Router = () => {
       children: [
         { path: '/', element: <Navigate to="/dashboard" /> },
         { path: '/dashboard', element: <Dashboard /> },
-        { path: '/cms', element: <ContentManager /> },
-        { path: '/calendar', element: <Calender /> },
+        { path: '/scheduler', element: <CalendarScheduler /> },
       ],
     },
   ]);
