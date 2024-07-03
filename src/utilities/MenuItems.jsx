@@ -9,11 +9,11 @@ const MenuItems = [
     path: '/dashboard',
     icon: DashboardOutlined,
   },
-  // {
-  //   label: 'Content Manager',
-  //   path: '/cms',
-  //   icon: LibraryBooksOutlined,
-  // },
+  {
+    label: 'Content Manager',
+    path: '/collection',
+    icon: LibraryBooksOutlined,
+  },
   // {
   //   label: 'Calendar',
   //   path: '/calendar',

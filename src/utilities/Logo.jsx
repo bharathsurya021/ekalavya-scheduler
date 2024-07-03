@@ -6,10 +6,13 @@ const LinkStyled = styled(Link)(() => ({
   width: '180px',
   overflow: 'hidden',
   display: 'block',
+  textDecoration: 'None',
+  fontSize: '18px',
+  color: '#f2f0f',
 }));
 
 const Logo = () => {
-  return <LinkStyled to="/">Logo</LinkStyled>;
+  return <LinkStyled to="/">Ekalavya</LinkStyled>;
 };
 
 export default Logo;
