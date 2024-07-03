@@ -17,18 +17,42 @@ const screensData = [
     id: 1,
     name: 'Screen 1',
     events: [
-      { id: 1, title: 'File 1', startDate: '2024-07-02', endDate: '2024-08-28', startTime: '10:00', endTime: '12:00' },
-      { id: 2, title: 'File 2', startDate: '2024-07-05', endDate: '2024-07-29', startTime: '14:00', endTime: '16:00' },
-    ],
+      {
+        id: 'event1-screen1',
+        title: 'Meeting',
+        start: '2024-07-05T10:00:00',
+        end: '2024-07-05T11:00:00',
+        rrule: 'FREQ=WEEKLY;BYDAY=TU,TH;COUNT=10' // Example of a recurring event every Tuesday and Thursday, 10 occurrences
+      },
+      {
+        id: 'event2-screen1',
+        title: 'Presentation',
+        start: '2024-07-06T14:00:00',
+        end: '2024-07-06T16:00:00',
+        rrule: 'FREQ=MONTHLY;BYMONTHDAY=15;COUNT=5' // Example of a recurring event on the 15th of every month, 5 occurrences
+      }
+    ]
   },
   {
     id: 2,
     name: 'Screen 2',
     events: [
-      { id: 3, title: 'File 3', startDate: '2024-06-30', endDate: '2024-06-30', startTime: '09:00', endTime: '10:00' },
-      { id: 4, title: 'File 4', startDate: '2024-07-01', endDate: '2024-07-01', startTime: '11:00', endTime: '13:00' },
-    ],
-  },
+      {
+        id: 'event1-screen2',
+        title: 'Training',
+        start: '2024-07-07T09:00:00',
+        end: '2024-07-07T12:00:00',
+        rrule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR;COUNT=8' // Example of a recurring event every Monday, Wednesday, and Friday, 8 occurrences
+      },
+      {
+        id: 'event2-screen2',
+        title: 'Team Lunch',
+        start: '2024-07-08T12:00:00',
+        end: '2024-07-08T13:00:00',
+        rrule: 'FREQ=WEEKLY;BYDAY=FR;COUNT=12' // Example of a recurring event every Friday, 12 occurrences
+      }
+    ]
+  }
 ];
 
 const ScreenManager = () => {
@@ -47,11 +71,11 @@ const ScreenManager = () => {
   const handleCreateScreen = (newScreen) => {
     setScreens([...screens, newScreen]);
     setIsModalOpen(false);
-    // navigate('/scheduler', { state: { screen: newScreen } });
+    navigate('/scheduler', { state: { screen: newScreen } });
   };
 
   const handleViewScreen = (screen) => {
-    // navigate('/scheduler', { state: { screen } });
+    navigate('/scheduler', { state: { screen } });
     console.log('screen view clicked')
   };
 
