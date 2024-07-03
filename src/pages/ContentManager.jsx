@@ -1,25 +1,38 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Typography,
   Grid,
   Stack,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
-  IconButton,
 } from '@mui/material';
 import PageContainer from '../components/containers/PageContainer';
 import DashboardCard from '../utilities/DashboardCard';
-import CollectionCard from '../utilities/collection/CollectionCard';
+import CollectionList from '../utilities/collection/CollectionList';
+import CollectionCreationModal from '../utilities/collection/CollectionCreationModal';
+
+const initialCollections = [
+  {
+    id: 1,
+    name: 'Collection 1',
+    files: [
+      { id: 1, name: 'File 1', url: 'https://example.com/file1.pdf' },
+      { id: 2, name: 'File 2', url: 'https://example.com/file2.pdf' },
+    ],
+  },
+  {
+    id: 2,
+    name: 'Collection 2',
+    files: [
+      { id: 3, name: 'File 3', url: 'https://example.com/file3.pdf' },
+    ],
+  },
+];
 
 const ContentManager = () => {
-  const [collections, setCollections] = useState([]);
-  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
-  const [collectionName, setCollectionName] = useState('');
+  const [collections, setCollections] = useState(initialCollections);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleCreateCollectionClick = () => {
     setIsModalOpen(true);
@@ -27,84 +40,39 @@ const ContentManager = () => {
 
   const handleModalClose = () => {
     setIsModalOpen(false);
-    setCollectionName(''); // Clear input field
   };
 
-  const handleCreateCollection = () => {
-    if (collectionName) {
-      setCollections([
-        ...collections,
-        { id: collections.length + 1, title: collectionName },
-      ]);
-      setIsModalOpen(false);
-      setCollectionName('');
-    }
+  const handleCreateCollection = (newCollection) => {
+    setCollections([...collections, newCollection]);
+    setIsModalOpen(false);
+    // navigate('/collectionview', { state: { collection: newCollection } });
+  };
+
+  const handleViewCollection = (collection) => {
+    navigate('/collectionview', { state: { collection } });
+    console.log('collection view clicked');
   };
 
   return (
-    <PageContainer
-      title="Content manager"
-      description="Manage your site content"
-    >
+    <PageContainer title="Content manager" description="Manage your collections and files">
       <Grid container spacing={3}>
         <Grid item sm={12}>
-          <DashboardCard
-            title="Content Manager"
-            subtitle="Manage your collections for your site."
-          >
+          <DashboardCard title="Content Manager" subtitle="Manage your content collections and files.">
             <Grid container spacing={3}>
               <Grid item sm={12}>
                 <Stack direction={'row'} spacing={3} mb={3}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleCreateCollectionClick}
-                  >
+                  <Button variant="contained" color="primary" onClick={handleCreateCollectionClick}>
                     Create Collection
                   </Button>
                 </Stack>
                 <Typography>Collections</Typography>
-                <Grid container spacing={2}>
-                  {collections.map((collection) => (
-                    <Grid item sm={3} key={collection.id}>
-                      <CollectionCard
-                        title={collection.title}
-                        onOptionClick={(option) =>
-                          console.log(`Option Clicked: ${option}`)
-                        }
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
+                <CollectionList collections={collections} onViewCollection={handleViewCollection} />
               </Grid>
             </Grid>
           </DashboardCard>
         </Grid>
       </Grid>
-
-      {/* Collection Creation Modal */}
-      <Dialog open={isModalOpen} onClose={handleModalClose}>
-        <DialogTitle>Create Collection</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Collection Name"
-            type="text"
-            fullWidth
-            value={collectionName}
-            onChange={(e) => setCollectionName(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleModalClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleCreateCollection} color="primary">
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CollectionCreationModal open={isModalOpen} onClose={handleModalClose} onCreateCollection={handleCreateCollection} />
     </PageContainer>
   );
 };

@@ -7,6 +7,8 @@ import SignUp from './pages/Signup';
 import Error from './pages/Error';
 import Dashboard from './pages/Dashboard';
 import CalendarScheduler from './pages/Scheduler';
+import CollectionManager from './pages/ContentManager';
+import CollectionViewPage from './pages/CollectionView';
 const Router = () => {
   const routes = useRoutes([
     {
@@ -25,7 +27,11 @@ const Router = () => {
       children: [
         { path: '/', element: <Navigate to="/dashboard" /> },
         { path: '/dashboard', element: <Dashboard /> },
+        { path: '/collection', element: <CollectionManager /> },
+        { path: "/collectionview", element: <CollectionViewPage /> },
+
         { path: '/scheduler', element: <CalendarScheduler /> },
+        { path: '/contentmanager', element: <CollectionManager /> },
       ],
     },
   ]);

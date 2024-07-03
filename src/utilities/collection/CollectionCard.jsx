@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { LinearScaleOutlined } from '@mui/icons-material';
 
-const CollectionCard = ({ title, onOptionClick }) => {
+const CollectionCard = ({ name, id, onOptionClick }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handleMenuOpen = (event) => {
@@ -31,7 +31,7 @@ const CollectionCard = ({ title, onOptionClick }) => {
           }}
         >
           <Typography variant="h6" style={{ flexGrow: 1 }}>
-            {title}
+            {name}
           </Typography>
           <IconButton
             aria-controls="collection-options-menu"
@@ -48,6 +48,7 @@ const CollectionCard = ({ title, onOptionClick }) => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
+          <MenuItem onClick={() => onOptionClick('View')}>View</MenuItem>
           <MenuItem onClick={() => onOptionClick('Rename')}>Rename</MenuItem>
           <MenuItem onClick={() => onOptionClick('Edit')}>Edit</MenuItem>
           <MenuItem onClick={() => onOptionClick('Preview')}>Preview</MenuItem>
