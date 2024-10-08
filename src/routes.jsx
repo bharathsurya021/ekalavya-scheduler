@@ -10,13 +10,13 @@ import CalendarScheduler from './pages/Scheduler';
 const Router = () => {
   const routes = useRoutes([
     {
-      path: '/auth',
+      path: '/',
       element: <PublicLayout />,
       children: [
-        { path: '/auth/login', element: <SignIn /> },
+        { path: '/', element: <SignIn /> },
         { path: '404', element: <Error /> },
-        { path: '/auth/register', element: <SignUp /> },
-        { path: '*', element: <Navigate to="/auth/404" /> },
+        { path: '/register', element: <SignUp /> },
+        { path: '*', element: <Navigate to="/404" /> },
       ],
     },
     {
