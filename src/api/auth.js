@@ -1,3 +1,5 @@
+import Cookies from 'js-cookie';
+
 const BASE_URL = 'http://127.0.0.1:8000/api/v1/auth';
 
 export const registerUser = async (userData) => {
@@ -46,3 +48,24 @@ export const loginUser = async (credentials) => {
     throw error;
   }
 };
+
+
+
+export const logoutUser = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Logout failed');
+    }
+
+    Cookies.remove('access_token');
+    console.log('Logout successful');
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+};
+

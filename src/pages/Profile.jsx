@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 
 import ProfileImg from '../assets/images/user-1.jpg';
+import { logoutUser } from '../api/auth';
 
 const Profile = () => {
   const [anchorEl2, setAnchorEl2] = useState(null);
@@ -27,7 +28,10 @@ const Profile = () => {
   const handleClose2 = () => {
     setAnchorEl2(null);
   };
-
+  const handleLogout = async () => {
+    await logoutUser();
+    handleClose2();
+  };
   return (
     <Box>
       <IconButton
@@ -95,10 +99,10 @@ const Profile = () => {
         </MenuItem> */}
         <Box mt={1} py={1} px={2}>
           <Button
-            to="/auth/login"
             variant="outlined"
             color="primary"
             component={Link}
+            onClick={handleLogout}
             fullWidth
           >
             Logout

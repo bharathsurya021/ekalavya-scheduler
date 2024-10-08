@@ -12,7 +12,6 @@ import { useAuth } from './utilities/AuthContext';
 
 const Router = () => {
   const { isAuthenticated } = useAuth();
-  console.log(isAuthenticated)
   const routes = useRoutes([
     {
       path: '/',

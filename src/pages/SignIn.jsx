@@ -51,7 +51,7 @@ export default function SignIn() {
 
     try {
       const response = await loginUser(credentials);
-      login()
+      login(response.access_token)
       navigate('/dashboard')
       console.log('Login successful:', response);
     } catch (error) {
