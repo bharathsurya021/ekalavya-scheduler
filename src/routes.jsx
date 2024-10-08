@@ -7,15 +7,20 @@ import SignUp from './pages/Signup';
 import Error from './pages/Error';
 import Dashboard from './pages/Dashboard';
 import CalendarScheduler from './pages/Scheduler';
+import PrivateRoute from './components/PrivateRoute';
+import { useAuth } from './utilities/AuthContext';
+
 const Router = () => {
+  const { isAuthenticated } = useAuth();
+  console.log(isAuthenticated)
   const routes = useRoutes([
     {
       path: '/',
       element: <PublicLayout />,
       children: [
-        { path: '/', element: <SignIn /> },
+        { path: '/', element: isAuthenticated ? <Navigate to="/dashboard" /> : <SignIn /> },
         { path: '404', element: <Error /> },
-        { path: '/register', element: <SignUp /> },
+        { path: '/register', element: isAuthenticated ? <Navigate to="/dashboard" /> : <SignUp /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],
     },
@@ -23,9 +28,19 @@ const Router = () => {
       path: '/',
       element: <PrivateLayout />,
       children: [
-        { path: '/', element: <Navigate to="/dashboard" /> },
-        { path: '/dashboard', element: <Dashboard /> },
-        { path: '/scheduler', element: <CalendarScheduler /> },
+        { path: '/', element: isAuthenticated && <Navigate to="/dashboard" /> },
+        {
+          path: '/dashboard', element: (
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>)
+        },
+        {
+          path: '/scheduler', element: (
+            <PrivateRoute>
+              <CalendarScheduler />
+            </PrivateRoute>)
+        },
       ],
     },
   ]);
