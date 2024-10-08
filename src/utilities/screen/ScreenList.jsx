@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Grid } from '@mui/material';
 import ScreenCard from './ScreenCard';
 
-const ScreenList = ({ screens, onViewScreen }) => {
+const ScreenList = memo(({ screens, onViewScreen }) => {
   return (
     <Grid container spacing={2}>
       {screens.map((screen) => (
-        <Grid item sm={3} key={screen.id}>
+        <Grid item sm={3} key={screen.device_id}>
           <ScreenCard
             title={screen.name}
-            id={screen.id}
+            id={screen.device_id}
             onOptionClick={(option) => {
               if (option === 'View' || option === 'Preview') {
                 onViewScreen(screen);
@@ -22,6 +22,6 @@ const ScreenList = ({ screens, onViewScreen }) => {
       ))}
     </Grid>
   );
-};
+});
 
 export default ScreenList;
