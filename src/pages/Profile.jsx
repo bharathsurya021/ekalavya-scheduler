@@ -19,8 +19,10 @@ import {
 
 import ProfileImg from '../assets/images/user-1.jpg';
 import { logoutUser } from '../api/auth';
+import { useAuth } from '../utilities/AuthContext';
 
 const Profile = () => {
+  const { logout } = useAuth()
   const [anchorEl2, setAnchorEl2] = useState(null);
   const handleClick2 = (event) => {
     setAnchorEl2(event.currentTarget);
@@ -30,6 +32,7 @@ const Profile = () => {
   };
   const handleLogout = async () => {
     await logoutUser();
+    logout()
     handleClose2();
   };
   return (
