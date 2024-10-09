@@ -53,7 +53,6 @@ export default function SignIn() {
       const response = await loginUser(credentials);
       login(response.access_token)
       navigate('/dashboard')
-      console.log('Login successful:', response);
     } catch (error) {
       console.error('Login failed:', error);
     }

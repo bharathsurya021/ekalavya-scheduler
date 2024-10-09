@@ -158,7 +158,6 @@ const CreateCollectionPage = () => {
     try {
       const response = await createCollection(newCollection, token);
       const uploadResponse = await addFilesToCollections(collectionName, uploadedFiles, token)
-      console.log('New Collection Created:', response.data, uploadResponse.data);
       navigate('/content');
     } catch (error) {
       console.error('Failed to create collection:', error);

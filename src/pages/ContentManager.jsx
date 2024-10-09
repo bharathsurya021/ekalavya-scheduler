@@ -13,7 +13,6 @@ const ContentManager = () => {
     navigate('/content/create');
   };
   const handleOptionClick = (action, collectionName) => {
-    console.log(`Clicked ${action} on ${collectionName}`);
     if (action === 'Edit' || action === 'Preview') {
       navigate(`/content/${collectionName}`);
     }

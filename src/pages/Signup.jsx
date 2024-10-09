@@ -51,7 +51,6 @@ export default function SignUp() {
     try {
       const response = await registerUser(userData);
       navigate('/')
-      console.log('Registration successful:', response);
     } catch (error) {
       console.error('Registration failed:', error);
     }
