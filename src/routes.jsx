@@ -7,6 +7,7 @@ import SignUp from './pages/Signup';
 import Error from './pages/Error';
 import ScreenManager from './pages/ScreenManager';
 import CreateScreen from './pages/ScreenCreate';
+import CreateCollection from './pages/ContentCreate';
 import ContentManager from './pages/ContentManager';
 import { useAuth } from './utilities/AuthContext';
 
@@ -39,9 +40,14 @@ const Router = () => {
           path: 'screens/create',
           element: <CreateScreen />,
         },
+
         {
           path: 'content',
           element: <ContentManager />,
+        },
+        {
+          path: 'content/create',
+          element: < CreateCollection />,
         },
       ],
     },
