@@ -5,8 +5,8 @@ import PrivateLayout from './layouts/PrivateLayout';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/Signup';
 import Error from './pages/Error';
-import Dashboard from './pages/Dashboard';
-import CalendarScheduler from './pages/Scheduler';
+import ScreenManager from './pages/ScreenManager';
+import ContentManager from './pages/ContentManager';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuth } from './utilities/AuthContext';
 
@@ -29,16 +29,28 @@ const Router = () => {
       children: [
         { path: '/', element: isAuthenticated && <Navigate to="/dashboard" /> },
         {
-          path: '/dashboard', element: (
+          path: '/dashboard',
+          element: (
             <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>)
+              <ScreenManager />
+            </PrivateRoute>
+          ),
         },
         {
-          path: '/scheduler', element: (
+          path: '/screens',
+          element: (
             <PrivateRoute>
-              <CalendarScheduler />
-            </PrivateRoute>)
+              <ScreenManager />
+            </PrivateRoute>
+          ),
+        },
+        {
+          path: '/content',
+          element: (
+            <PrivateRoute>
+              <ContentManager />
+            </PrivateRoute>
+          ),
         },
       ],
     },

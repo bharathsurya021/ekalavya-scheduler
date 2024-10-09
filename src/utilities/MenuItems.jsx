@@ -5,15 +5,15 @@ import {
 } from '@mui/icons-material';
 const MenuItems = [
   {
-    label: 'Screens',
-    path: '/dashboard',
+    label: 'Screen Manager',
+    path: '/screens',
     icon: DashboardOutlined,
   },
-  // {
-  //   label: 'Content Manager',
-  //   path: '/cms',
-  //   icon: LibraryBooksOutlined,
-  // },
+  {
+    label: 'Content Manager',
+    path: '/content',
+    icon: LibraryBooksOutlined,
+  },
   // {
   //   label: 'Calendar',
   //   path: '/calendar',
