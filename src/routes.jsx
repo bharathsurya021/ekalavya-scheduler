@@ -6,51 +6,42 @@ import SignIn from './pages/SignIn';
 import SignUp from './pages/Signup';
 import Error from './pages/Error';
 import ScreenManager from './pages/ScreenManager';
+import CreateScreen from './pages/ScreenCreate';
 import ContentManager from './pages/ContentManager';
-import PrivateRoute from './components/PrivateRoute';
 import { useAuth } from './utilities/AuthContext';
 
 const Router = () => {
   const { isAuthenticated } = useAuth();
+
   const routes = useRoutes([
     {
       path: '/',
       element: <PublicLayout />,
       children: [
         { path: '/', element: isAuthenticated ? <Navigate to="/dashboard" /> : <SignIn /> },
-        { path: '404', element: <Error /> },
         { path: '/register', element: isAuthenticated ? <Navigate to="/dashboard" /> : <SignUp /> },
+        { path: '404', element: <Error /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],
     },
     {
       path: '/',
-      element: <PrivateLayout />,
+      element: (
+        <PrivateLayout />
+      ),
       children: [
-        { path: '/', element: isAuthenticated && <Navigate to="/dashboard" /> },
+        { path: 'dashboard', element: <Navigate to="/screens" /> },
         {
-          path: '/dashboard',
-          element: (
-            <PrivateRoute>
-              <ScreenManager />
-            </PrivateRoute>
-          ),
+          path: 'screens',
+          element: <ScreenManager />,
         },
         {
-          path: '/screens',
-          element: (
-            <PrivateRoute>
-              <ScreenManager />
-            </PrivateRoute>
-          ),
+          path: 'screens/create',
+          element: <CreateScreen />,
         },
         {
-          path: '/content',
-          element: (
-            <PrivateRoute>
-              <ContentManager />
-            </PrivateRoute>
-          ),
+          path: 'content',
+          element: <ContentManager />,
         },
       ],
     },
