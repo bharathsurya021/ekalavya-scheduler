@@ -4,13 +4,12 @@ import { Typography, Stack, Button, Grid } from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ScreenList from '../utilities/screen/ScreenList';
 import ScreenFilter from '../utilities/screen/ScreenFilter';
-import ScreenCreationModal from '../utilities/screen/ScreenCreationModal';
 import UseFetchScreens from '../hooks/useFetchScreens';
+import { Add } from '@mui/icons-material';
 
 const ScreenManager = () => {
-  const { screens, addScreen } = UseFetchScreens();
+  const { screens } = UseFetchScreens();
   const [filteredScreens, setFilteredScreens] = useState(screens);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,21 +17,8 @@ const ScreenManager = () => {
   }, [screens]);
 
   const handleCreateScreenClick = () => {
-    setIsModalOpen(true);
+    navigate('/screens/create');
   };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleCreateScreen = useCallback(
-    (newScreen) => {
-      addScreen(newScreen);
-      setIsModalOpen(false);
-      navigate('/scheduler', { state: { screen: newScreen } });
-    },
-    [addScreen, navigate]
-  );
 
   const handleViewScreen = useCallback(
     (screen) => {
@@ -57,8 +43,8 @@ const ScreenManager = () => {
   return (
     <DashboardLayout title="Screen Manager" subtitle="Manage your screens for your site.">
       <Stack direction="row" spacing={3} mb={3}>
-        <Button variant="contained" color="primary" onClick={handleCreateScreenClick}>
-          Create Screen
+        <Button variant="contained" color="primary" onClick={handleCreateScreenClick} startIcon={< Add />}>
+          Add
         </Button>
       </Stack>
       <Stack spacing={3} mb={3}>
@@ -66,7 +52,6 @@ const ScreenManager = () => {
         <ScreenFilter onFilterChange={handleFilterChange} />
         <ScreenList screens={filteredScreens} onViewScreen={handleViewScreen} />
       </Stack>
-      <ScreenCreationModal open={isModalOpen} onClose={handleModalClose} onCreateScreen={handleCreateScreen} />
     </DashboardLayout>
   );
 };
