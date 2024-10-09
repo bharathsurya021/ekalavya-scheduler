@@ -6,12 +6,23 @@ import useFetchCollections from '../hooks/UseFetchCollections';
 import { useNavigate } from 'react-router-dom';
 
 const ContentManager = () => {
-  const { collections, loading, error } = useFetchCollections();
+  const { collections, loading, error, onDelete } = useFetchCollections();
   const navigate = useNavigate();
 
   const handleCreateCollectionClick = () => {
     navigate('/content/create');
   };
+  const handleOptionClick = (action, collectionName) => {
+    console.log(`Clicked ${action} on ${collectionName}`);
+    if (action === 'Edit' || action === 'Preview') {
+      navigate(`/content/${collectionName}`);
+    }
+  };
+
+  const handleDeleteCollectionClick = (collectionName) => {
+    onDelete(collectionName)
+  }
+
 
   return (
     <DashboardLayout title="Content Manager" subtitle="Manage your collections for your site.">
@@ -26,7 +37,7 @@ const ContentManager = () => {
       ) : error ? (
         <Alert severity="error">Failed to fetch collections: {error.message}</Alert>
       ) : collections.length > 0 ? (
-        <CollectionList collections={collections} onOptionClick={(option) => console.log(`Option Clicked: ${option}`)} />
+        <CollectionList collections={collections} onOptionClick={handleOptionClick} onDelete={handleDeleteCollectionClick} />
       ) : (
         <Typography>No collections found. Please create a new collection.</Typography>
       )}
