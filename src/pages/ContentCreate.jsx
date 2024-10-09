@@ -15,13 +15,13 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { createCollection } from '../api/collections';
+import { addFilesToCollections, createCollection } from '../api/collections';
 import { useAuth } from '../utilities/AuthContext';
 import UseFetchScreens from '../hooks/useFetchScreens';
 
 const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeChange, onAddTimeSlot }) => (
   <Grid container spacing={2} alignItems={"center"} sx={{ marginTop: "0px!important" }}>
-    <Grid item xs={5} >
+    <Grid item xs={5}>
       <TextField
         type="time"
         value={startTime}
@@ -53,15 +53,17 @@ const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeCh
   </Grid>
 ));
 
-const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateChange }) => (
+const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateChange, error }) => (
   <Grid container spacing={2} alignItems={"center"} sx={{ marginTop: "0px!important" }}>
-    <Grid item xs={6} >
+    <Grid item xs={6}>
       <TextField
         type="datetime-local"
         value={startDate}
         onChange={onStartDateChange}
         fullWidth
         required
+        error={!!error.startDate}
+        helperText={error.startDate}
       />
     </Grid>
     <Grid item xs={6}>
@@ -71,37 +73,38 @@ const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateC
         onChange={onEndDateChange}
         fullWidth
         required
+        error={!!error.endDate}
+        helperText={error.endDate}
       />
     </Grid>
   </Grid>
 ));
-const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile }) => {
-  return (
-    <Stack spacing={2}>
-      <Typography variant="body2">Upload Files</Typography>
-      <TextField
-        accept="*"
-        id="file-upload"
-        sx={{ display: 'none' }}
-        type="file"
-        inputProps={{ multiple: true }}
-        onChange={onFileUpload}
-      />
-      <Button sx={{ "width": "120px!important" }} variant="contained" component="label" htmlFor="file-upload">
-        Choose Files
-      </Button>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-        {uploadedFiles.map((file) => (
-          <Chip
-            key={`${file.name}-${file.lastModified}`}
-            label={file.name}
-            onDelete={() => onDeleteFile(file)}
-          />
-        ))}
-      </Box>
-    </Stack>
-  );
-});
+
+const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile }) => (
+  <Stack spacing={2}>
+    <Typography variant="body2">Upload Files</Typography>
+    <TextField
+      accept="*"
+      id="file-upload"
+      sx={{ display: 'none' }}
+      type="file"
+      inputProps={{ multiple: true }}
+      onChange={onFileUpload}
+    />
+    <Button sx={{ "width": "120px!important" }} variant="contained" component="label" htmlFor="file-upload">
+      Choose Files
+    </Button>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      {uploadedFiles.map((file) => (
+        <Chip
+          key={`${file.name}-${file.lastModified}`}
+          label={file.name}
+          onDelete={() => onDeleteFile(file)}
+        />
+      ))}
+    </Box>
+  </Stack>
+));
 
 const CreateCollectionPage = () => {
   const [collectionName, setCollectionName] = useState('');
@@ -120,16 +123,25 @@ const CreateCollectionPage = () => {
   const { token } = useAuth();
   const { screens } = UseFetchScreens();
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!collectionName) newErrors.collectionName = "Collection Name is required";
+    if (!frequency) newErrors.frequency = "Frequency is required";
+    if (frequency === 'Weekly' && !daysOfWeek.length) newErrors.daysOfWeek = "At least one day of the week is required";
+    if (frequency === 'Monthly' && !dayOfMonth) newErrors.dayOfMonth = "Day of the Month is required";
+    if (frequency === 'Yearly' && !dayOfYear) newErrors.dayOfYear = "Day of the Year is required";
+    if (!startDate) newErrors.startDate = "Start Date is required";
+    if (!endDate) newErrors.endDate = "End Date is required";
+    if (!timeSlots.length) newErrors.timeSlots = "At least one time slot is required";
+    if (!selectedDevices.length) newErrors.selectedDevices = "At least one device must be selected";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleCreateCollection = async () => {
-    console.log('called the create function')
-    // if (!collectionName || !frequency || !startDate || !endDate || timeSlots.length === 0) {
-    //   setError('Collection Name, Frequency,Start Time,End Time, Start Date, and End Date are required!');
-    //   return;
-    // }
-
-
+    if (!validateForm()) return;
 
     const newCollection = {
       collection_name: collectionName,
@@ -142,32 +154,36 @@ const CreateCollectionPage = () => {
       alloted_devices: selectedDevices,
       url_paths: urlPaths,
     };
-    console.log(newCollection)
+
     try {
       const response = await createCollection(newCollection, token);
-      console.log('New Collection Created:', response.data);
+      const uploadResponse = await addFilesToCollections(collectionName, uploadedFiles, token)
+      console.log('New Collection Created:', response.data, uploadResponse.data);
       navigate('/content');
     } catch (error) {
       console.error('Failed to create collection:', error);
     }
   };
+
   const handleFileUpload = useCallback((event) => {
     const files = Array.from(event.target.files);
     const newUrlPaths = files.map((file) => `${collectionName}/${file.name}`);
     setUploadedFiles((prev) => [...prev, ...files]);
-    setUrlPaths((prev) => [...prev, ...newUrlPaths])
-  }, [uploadedFiles, collectionName]);
+    setUrlPaths((prev) => [...prev, ...newUrlPaths]);
+  }, [collectionName]);
+
   const handleDeleteFile = useCallback((fileToDelete) => {
     setUploadedFiles((prev) => prev.filter(file => file.name !== fileToDelete.name));
-  }, [collectionName]);
+  }, []);
+
   const handleDaysOfWeekChange = useCallback((event) => {
     const { target: { value } } = event;
     setDaysOfWeek(typeof value === 'string' ? value.split(',') : value);
   }, []);
 
   const handleAddTimeSlot = useCallback(() => {
-    if (!startTime || !endTime || !startDate || !endDate) {
-      setError('Both Start Time, End Time, Start Date, and End Date are required!');
+    if (!startTime || !endTime) {
+      setErrors((prev) => ({ ...prev, timeSlots: 'Both Start Time and End Time are required!' }));
       return;
     }
 
@@ -182,17 +198,23 @@ const CreateCollectionPage = () => {
       ]
     };
 
-    // Assuming timeSlots is an array of objects with the specified format
     setTimeSlots((prev) => [...prev, newTimeSlot]);
-
-    // Reset the input fields
-    setStartTime('');
-    setEndTime('');
-    setStartDate(''); // Reset startDate if you are using a controlled input
-    setEndDate(''); // Reset endDate if you are using a controlled input
-    setError('');
+    setErrors((prev) => ({ ...prev, timeSlots: undefined }));
   }, [startTime, endTime, startDate, endDate]);
-
+  const handleDeleteTimeSlot = useCallback((slotIndex, timeIndex) => {
+    setTimeSlots((prev) =>
+      prev.map((slot, i) => {
+        if (i === slotIndex) {
+          // Remove the specific time slot
+          return {
+            ...slot,
+            timeSlot: slot.timeSlot.filter((_, j) => j !== timeIndex),
+          };
+        }
+        return slot;
+      })
+    );
+  }, [timeSlots]);
 
   const handleDeviceChange = useCallback((event) => {
     const { target: { value } } = event;
@@ -210,10 +232,10 @@ const CreateCollectionPage = () => {
     setEndTime('');
     setStartDate('');
     setEndDate('');
-    setError('');
+    setErrors({});
     setSelectedDevices([]);
-    setUploadedFiles([])
-    setUrlPaths([])
+    setUploadedFiles([]);
+    setUrlPaths([]);
   }, []);
 
   return (
@@ -225,25 +247,20 @@ const CreateCollectionPage = () => {
           value={collectionName}
           onChange={(e) => {
             setCollectionName(e.target.value);
-            setError('');
+            setErrors((prev) => ({ ...prev, collectionName: undefined }));
           }}
-          fullWidth
-          error={!collectionName && !!error}
-          helperText={!collectionName && !!error ? error : ''}
+          error={!!errors.collectionName}
+          helperText={errors.collectionName}
         />
-
-        <FormControl fullWidth required error={!frequency && !!error}>
+        <FormControl required error={!!errors.frequency}>
           <InputLabel id="frequency-label">Frequency</InputLabel>
           <Select
             labelId="frequency-label"
             value={frequency}
-            input={<OutlinedInput label="Frequency" />}
+            input={<OutlinedInput label={"Frequency"} />}
             onChange={(e) => {
               setFrequency(e.target.value);
-              setError('');
-              setDaysOfWeek([]);
-              setDayOfMonth('');
-              setDayOfYear('');
+              setErrors((prev) => ({ ...prev, frequency: undefined }));
             }}
           >
             <MenuItem value="Daily">Daily</MenuItem>
@@ -251,68 +268,57 @@ const CreateCollectionPage = () => {
             <MenuItem value="Monthly">Monthly</MenuItem>
             <MenuItem value="Yearly">Yearly</MenuItem>
           </Select>
-          <Typography variant="caption" color="error">
-            {!frequency && !!error ? error : ''}
-          </Typography>
+          {errors.frequency && <span style={{ color: 'red' }}>{errors.frequency}</span>}
         </FormControl>
 
         {frequency === 'Weekly' && (
-          <FormControl fullWidth>
-            <InputLabel id="days-of-week-label">Days of the Week</InputLabel>
+          <FormControl required error={!!errors.daysOfWeek}>
+            <InputLabel id="daysOfWeek-label">Days of Week</InputLabel>
             <Select
-              labelId="days-of-week-label"
+              required
+              labelId="daysOfWeek-label"
               multiple
               value={daysOfWeek}
+              input={<OutlinedInput label={"Days of Week"} />}
               onChange={handleDaysOfWeekChange}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} />
-                  ))}
-                </Box>
-              )}
             >
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                <MenuItem key={day} value={day}>
-                  {day}
-                </MenuItem>
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+                <MenuItem key={day} value={day}>{day}</MenuItem>
               ))}
             </Select>
+            {errors.daysOfWeek && <span style={{ color: 'red' }}>{errors.daysOfWeek}</span>}
           </FormControl>
         )}
 
         {frequency === 'Monthly' && (
           <TextField
             required
-            label="Day of the Month"
-            type="number"
+            label="Day of the Month (DD)"
             value={dayOfMonth}
             onChange={(e) => {
               setDayOfMonth(e.target.value);
-              setError('');
+              setErrors((prev) => ({ ...prev, dayOfMonth: undefined }));
             }}
-            fullWidth
-            error={!dayOfMonth && !!error}
-            helperText={!dayOfMonth && !!error ? error : ''}
+            error={!!errors.dayOfMonth}
+            helperText={errors.dayOfMonth}
           />
         )}
 
         {frequency === 'Yearly' && (
           <TextField
             required
-            label="Day of the Year (MM-DD)"
-            type="text"
+            label="Day of the Year (MM:DD)"
             value={dayOfYear}
             onChange={(e) => {
               setDayOfYear(e.target.value);
-              setError('');
+              setErrors((prev) => ({ ...prev, dayOfYear: undefined }));
             }}
-            fullWidth
-            error={!dayOfYear && !!error}
-            helperText={!dayOfYear && !!error ? error : ''}
+            error={!!errors.dayOfYear}
+            helperText={errors.dayOfYear}
           />
         )}
         <Box>
+
           <Typography variant="body2">Start Date - End Date</Typography>
 
           <DateRangeInput
@@ -320,72 +326,80 @@ const CreateCollectionPage = () => {
             endDate={endDate}
             onStartDateChange={(e) => {
               setStartDate(e.target.value);
-              setError('');
+              setErrors((prev) => ({ ...prev, startDate: undefined }));
             }}
             onEndDateChange={(e) => {
               setEndDate(e.target.value);
-              setError('');
+              setErrors((prev) => ({ ...prev, endDate: undefined }));
             }}
+            error={errors}
           />
         </Box>
+
         <Box>
+
           <Typography variant="body2">Start Time - End Time (HH:MM)</Typography>
+
           <TimeSlotInput
             startTime={startTime}
             endTime={endTime}
             onStartTimeChange={(e) => {
               setStartTime(e.target.value);
-              setError('');
+              setErrors((prev) => ({ ...prev, timeSlots: undefined }));
             }}
             onEndTimeChange={(e) => {
               setEndTime(e.target.value);
-              setError('');
+              setErrors((prev) => ({ ...prev, timeSlots: undefined }));
             }}
             onAddTimeSlot={handleAddTimeSlot}
           />
-          {timeSlots.length > 0 && (
-            <Box>
-              <Typography variant="body2">Added Time Slots:</Typography>
-              {timeSlots.map((slot, index) => (
-                <Typography key={index}>
-                  {slot.startTime} - {slot.endTime}
-                </Typography>
-              ))}
-            </Box>
-          )}
-        </Box>
+          {errors.timeSlots && <span style={{ color: 'red' }}>{errors.timeSlots}</span>}
 
-
-
-
-
-
-        <FormControl fullWidth required error={!selectedDevices.length && !!error}>
-          <InputLabel id="devices-label">Allotted Devices</InputLabel>
-          <Select
-            labelId="devices-label"
-            multiple
-            value={selectedDevices}
-            input={<OutlinedInput label="Allotted Devices" />}
-            onChange={handleDeviceChange}
-            renderValue={(selected) => selected.join(', ')}
-          >
-            {screens.map((screen) => (
-              <MenuItem key={screen.device_id} value={screen.device_id}>
-                {screen.name}
-              </MenuItem>
+          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
+            {timeSlots.map((slot, index) => (
+              <Box key={index}>
+                {/* <Typography variant="body2">
+                  Start Date: {new Date(slot.startDate).toLocaleDateString()} - End Date: {new Date(slot.endDate).toLocaleDateString()}
+                </Typography> */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  {slot.timeSlot.map((time, timeIndex) => (
+                    <Chip
+                      key={timeIndex}
+                      label={`${time.startTime} - ${time.endTime}`}
+                      onDelete={() => handleDeleteTimeSlot(index, timeIndex)}
+                      variant="outlined"
+                      color="primary"
+                    />
+                  ))}
+                </Box>
+              </Box>
             ))}
-          </Select>
-          <Typography variant="caption" color="error">
-            {!selectedDevices.length && !!error ? error : ''}
-          </Typography>
-        </FormControl>
+          </Box>
+
+        </Box>
 
         <FileUpload
           uploadedFiles={uploadedFiles}
           onFileUpload={handleFileUpload}
           onDeleteFile={handleDeleteFile}
         />
+
+        <FormControl required error={!!errors.selectedDevices}>
+          <InputLabel id="devices-label">Allotted Devices</InputLabel>
+          <Select
+            labelId="devices-label"
+            multiple
+            input={<OutlinedInput label={"Allotted Devices"} />}
+            value={selectedDevices}
+            onChange={handleDeviceChange}
+          >
+            {screens.map(screen => (
+              <MenuItem key={screen.device_id} value={screen.device_id}>{screen.name}</MenuItem>
+            ))}
+          </Select>
+          {errors.selectedDevices && <span style={{ color: 'red' }}>{errors.selectedDevices}</span>}
+        </FormControl>
+
         <Grid container spacing={2} justifyContent="space-between" >
           <Grid item xs={6} sx={{ "paddingLeft": "0px !important" }}>
             <Button sx={{ width: '100%' }} variant="outlined" color="secondary" onClick={resetForm}>
@@ -398,7 +412,6 @@ const CreateCollectionPage = () => {
             </Button>
           </Grid>
         </Grid>
-
       </Stack>
     </DashboardLayout>
   );
