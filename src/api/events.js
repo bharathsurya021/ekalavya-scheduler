@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://13.234.225.151:8000/api/v1/collections';
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/collections';
 
 export const getEvents = async () => {
   try {
@@ -14,10 +14,14 @@ export const getEvents = async () => {
   }
 };
 
-export const createEvents = async (collection) => {
+export const createEvents = async (collection, token) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/`, collection, {
       withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {
@@ -26,7 +30,7 @@ export const createEvents = async (collection) => {
   }
 };
 
-export const addFilesToEvents = async (collectionName, files) => {
+export const addFilesToEvents = async (collectionName, files, token) => {
   const formData = new FormData();
   formData.append('collection_name', collectionName);
   files.forEach((file) => {
@@ -38,6 +42,7 @@ export const addFilesToEvents = async (collectionName, files) => {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`,
       },
     });
     return response.data;
@@ -47,10 +52,13 @@ export const addFilesToEvents = async (collectionName, files) => {
   }
 };
 
-export const deleteEvent = async (collectionName) => {
+export const deleteEvent = async (collectionName, token) => {
   try {
     const response = await axios.delete(`${API_BASE_URL}/${collectionName}`, {
       withCredentials: true,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {
@@ -59,10 +67,13 @@ export const deleteEvent = async (collectionName) => {
   }
 };
 
-export const deleteFileFromEvent = async (collectionName, fileName) => {
+export const deleteFileFromEvent = async (collectionName, fileName, token) => {
   try {
     const response = await axios.delete(`${API_BASE_URL}/${collectionName}/file/${fileName}`, {
       withCredentials: true,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {
@@ -71,11 +82,14 @@ export const deleteFileFromEvent = async (collectionName, fileName) => {
   }
 };
 
-export const downloadFile = async (collectionName, fileName) => {
+export const downloadFile = async (collectionName, fileName, token) => {
   try {
     const response = await apiClient.get(`/${collectionName}/file/${fileName}`, {
       withCredentials: true,
       responseType: 'blob',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {

@@ -1,11 +1,15 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://13.234.225.151:8000/api/v1/devices';
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/devices';
 
-export const createDevice = async (deviceData) => {
+export const createDevice = async (deviceData, token) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/`, deviceData, {
       withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
     });
     return response;
   } catch (error) {
@@ -14,10 +18,13 @@ export const createDevice = async (deviceData) => {
   }
 };
 
-export const getDeviceById = async (deviceId) => {
+export const getDeviceById = async (deviceId, token) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/${deviceId}`, {
       withCredentials: true,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {
