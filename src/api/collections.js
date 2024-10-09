@@ -32,13 +32,12 @@ export const createCollection = async (collection, token) => {
 
 export const addFilesToCollections = async (collectionName, files, token) => {
   const formData = new FormData();
-  formData.append('collection_name', collectionName);
   files.forEach((file) => {
     formData.append('files', file);
   });
 
   try {
-    const response = await axios.post(`${API_BASE_URL}/upload/`, formData, {
+    const response = await axios.post(`${API_BASE_URL}/upload/?collection_name=${collectionName}`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
