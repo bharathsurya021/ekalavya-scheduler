@@ -45,7 +45,6 @@ export const logoutUser = async () => {
 
     if (response.status === 200) {
       Cookies.remove('access_token');
-      console.log('Logout successful');
     } else {
       throw new Error('Logout failed');
     }
