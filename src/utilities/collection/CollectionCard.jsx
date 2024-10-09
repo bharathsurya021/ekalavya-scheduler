@@ -7,7 +7,7 @@ import {
   Menu,
   MenuItem,
 } from '@mui/material';
-import { LinearScaleOutlined } from '@mui/icons-material';
+import { MoreVertOutlined } from '@mui/icons-material';
 
 const CollectionCard = ({ title, onOptionClick }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -38,7 +38,7 @@ const CollectionCard = ({ title, onOptionClick }) => {
             aria-haspopup="true"
             onClick={handleMenuOpen}
           >
-            <LinearScaleOutlined />
+            <MoreVertOutlined />
           </IconButton>
         </div>
         <Menu

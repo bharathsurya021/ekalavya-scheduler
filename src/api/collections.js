@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/collections';
 
-export const getEvents = async () => {
+export const getCollections = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/`, {
       withCredentials: true,
@@ -14,7 +14,7 @@ export const getEvents = async () => {
   }
 };
 
-export const createEvents = async (collection, token) => {
+export const createCollection = async (collection, token) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/`, collection, {
       withCredentials: true,
@@ -30,7 +30,7 @@ export const createEvents = async (collection, token) => {
   }
 };
 
-export const addFilesToEvents = async (collectionName, files, token) => {
+export const addFilesToCollections = async (collectionName, files, token) => {
   const formData = new FormData();
   formData.append('collection_name', collectionName);
   files.forEach((file) => {
@@ -52,7 +52,7 @@ export const addFilesToEvents = async (collectionName, files, token) => {
   }
 };
 
-export const deleteEvent = async (collectionName, token) => {
+export const deleteCollection = async (collectionName, token) => {
   try {
     const response = await axios.delete(`${API_BASE_URL}/${collectionName}`, {
       withCredentials: true,
@@ -67,7 +67,7 @@ export const deleteEvent = async (collectionName, token) => {
   }
 };
 
-export const deleteFileFromEvent = async (collectionName, fileName, token) => {
+export const deleteFileFromCollection = async (collectionName, fileName, token) => {
   try {
     const response = await axios.delete(`${API_BASE_URL}/${collectionName}/file/${fileName}`, {
       withCredentials: true,

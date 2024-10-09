@@ -1,28 +1,16 @@
-import React, { useState } from 'react';
-import { Typography, Grid, Stack, Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material';
+import React from 'react';
+import { Typography, Stack, Button, CircularProgress, Alert } from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
-import CollectionCard from '../utilities/collection/CollectionCard';
+import CollectionList from '../utilities/collection/CollectionList';
+import useFetchCollections from '../hooks/UseFetchCollections';
+import { useNavigate } from 'react-router-dom';
 
 const ContentManager = () => {
-  const [collections, setCollections] = useState([]);
-  const [collectionName, setCollectionName] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { collections, loading, error } = useFetchCollections();
+  const navigate = useNavigate();
 
   const handleCreateCollectionClick = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setCollectionName(''); // Clear input field
-  };
-
-  const handleCreateCollection = () => {
-    if (collectionName) {
-      setCollections([...collections, { id: collections.length + 1, title: collectionName }]);
-      setIsModalOpen(false);
-      setCollectionName('');
-    }
+    navigate('/content/create');
   };
 
   return (
@@ -32,34 +20,16 @@ const ContentManager = () => {
           Create Collection
         </Button>
       </Stack>
-      <Typography>Collections</Typography>
-      <Grid container spacing={2}>
-        {collections.map((collection) => (
-          <Grid item sm={3} key={collection.id}>
-            <CollectionCard title={collection.title} onOptionClick={(option) => console.log(`Option Clicked: ${option}`)} />
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Collection Creation Modal */}
-      <Dialog open={isModalOpen} onClose={handleModalClose}>
-        <DialogTitle>Create Collection</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Collection Name"
-            type="text"
-            fullWidth
-            value={collectionName}
-            onChange={(e) => setCollectionName(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleModalClose} color="primary">Cancel</Button>
-          <Button onClick={handleCreateCollection} color="primary">Create</Button>
-        </DialogActions>
-      </Dialog>
+      <Typography variant="h6">Collections</Typography>
+      {loading ? (
+        <CircularProgress />
+      ) : error ? (
+        <Alert severity="error">Failed to fetch collections: {error.message}</Alert>
+      ) : collections.length > 0 ? (
+        <CollectionList collections={collections} onOptionClick={(option) => console.log(`Option Clicked: ${option}`)} />
+      ) : (
+        <Typography>No collections found. Please create a new collection.</Typography>
+      )}
     </DashboardLayout>
   );
 };
