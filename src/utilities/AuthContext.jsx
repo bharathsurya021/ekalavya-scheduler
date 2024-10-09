@@ -5,29 +5,32 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const token = Cookies.get('access_token');
-    if (token !== 'undefined') {
+    const storedToken = Cookies.get('access_token');
+    if (storedToken && storedToken !== 'undefined') {
+      setToken(storedToken);
       setIsAuthenticated(true);
-    }
-    if (!token) {
+    } else {
       setIsAuthenticated(false);
     }
   }, []);
 
   const login = (accessToken) => {
     Cookies.set('access_token', accessToken, { expires: 1 / 48 });
+    setToken(accessToken);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
     Cookies.remove('access_token');
+    setToken(null);
     setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
