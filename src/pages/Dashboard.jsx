@@ -46,8 +46,8 @@ const ScreenManager = () => {
     (filters) => {
       const filtered = screens.filter(
         (screen) =>
-          screen.name.includes(filters.searchText) &&
-          screen.location.includes(filters.filterLocation) &&
+          screen.name.toLowerCase().includes(filters.searchText.toLowerCase()) &&
+          screen.location.toLowerCase().includes(filters.filterLocation.toLowerCase()) &&
           screen.device_id.includes(filters.filterId)
       );
       setFilteredScreens(filtered);
@@ -67,9 +67,11 @@ const ScreenManager = () => {
                     Create Screen
                   </Button>
                 </Stack>
-                <Typography>Screens</Typography>
-                <ScreenFilter onFilterChange={handleFilterChange} />
-                <ScreenList screens={filteredScreens} onViewScreen={handleViewScreen} />
+                <Stack spacing={3} mb={3} >
+                  <Typography>Screens</Typography>
+                  <ScreenFilter onFilterChange={handleFilterChange} />
+                  <ScreenList screens={filteredScreens} onViewScreen={handleViewScreen} />
+                </Stack>
               </Grid>
             </Grid>
           </DashboardCard>
