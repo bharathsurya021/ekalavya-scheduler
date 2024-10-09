@@ -1,23 +1,10 @@
 import React, { useState } from 'react';
-import {
-  Typography,
-  Grid,
-  Stack,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
-  IconButton,
-} from '@mui/material';
-import PageContainer from '../components/containers/PageContainer';
-import DashboardCard from '../utilities/DashboardCard';
+import { Typography, Grid, Stack, Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material';
+import DashboardLayout from '../layouts/DashboardLayout';
 import CollectionCard from '../utilities/collection/CollectionCard';
 
 const ContentManager = () => {
   const [collections, setCollections] = useState([]);
-  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
   const [collectionName, setCollectionName] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -32,54 +19,26 @@ const ContentManager = () => {
 
   const handleCreateCollection = () => {
     if (collectionName) {
-      setCollections([
-        ...collections,
-        { id: collections.length + 1, title: collectionName },
-      ]);
+      setCollections([...collections, { id: collections.length + 1, title: collectionName }]);
       setIsModalOpen(false);
       setCollectionName('');
     }
   };
 
   return (
-    <PageContainer
-      title="Content manager"
-      description="Manage your site content"
-    >
-      <Grid container spacing={3}>
-        <Grid item sm={12}>
-          <DashboardCard
-            title="Content Manager"
-            subtitle="Manage your collections for your site."
-          >
-            <Grid container spacing={3}>
-              <Grid item sm={12}>
-                <Stack direction={'row'} spacing={3} mb={3}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleCreateCollectionClick}
-                  >
-                    Create Collection
-                  </Button>
-                </Stack>
-                <Typography>Collections</Typography>
-                <Grid container spacing={2}>
-                  {collections.map((collection) => (
-                    <Grid item sm={3} key={collection.id}>
-                      <CollectionCard
-                        title={collection.title}
-                        onOptionClick={(option) =>
-                          console.log(`Option Clicked: ${option}`)
-                        }
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              </Grid>
-            </Grid>
-          </DashboardCard>
-        </Grid>
+    <DashboardLayout title="Content Manager" subtitle="Manage your collections for your site.">
+      <Stack direction="row" spacing={3} mb={3}>
+        <Button variant="contained" color="primary" onClick={handleCreateCollectionClick}>
+          Create Collection
+        </Button>
+      </Stack>
+      <Typography>Collections</Typography>
+      <Grid container spacing={2}>
+        {collections.map((collection) => (
+          <Grid item sm={3} key={collection.id}>
+            <CollectionCard title={collection.title} onOptionClick={(option) => console.log(`Option Clicked: ${option}`)} />
+          </Grid>
+        ))}
       </Grid>
 
       {/* Collection Creation Modal */}
@@ -97,15 +56,11 @@ const ContentManager = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleModalClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleCreateCollection} color="primary">
-            Create
-          </Button>
+          <Button onClick={handleModalClose} color="primary">Cancel</Button>
+          <Button onClick={handleCreateCollection} color="primary">Create</Button>
         </DialogActions>
       </Dialog>
-    </PageContainer>
+    </DashboardLayout>
   );
 };
 
