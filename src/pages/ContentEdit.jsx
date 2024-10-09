@@ -92,7 +92,7 @@ const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateC
   </Grid>
 ));
 
-const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collectionName, token, urlPaths }) => {
+const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collectionName, token }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
 
@@ -123,32 +123,30 @@ const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collection
 
   return (
     <Stack spacing={2}>
-      {urlPaths.length > 0 && <>
-        <Typography variant="body2">Uploaded Files</Typography>
+      <Typography variant="body2">Uploaded Files</Typography>
 
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>File Name</TableCell>
-                <TableCell>Actions</TableCell>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>File Name</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {uploadedFiles.map((file) => (
+              <TableRow key={`${file.name}-${file.lastModified}`}>
+                <TableCell>{file.name}</TableCell>
+                <TableCell>
+                  <Button variant="outlined" color="error" onClick={() => handleDeleteClick(file)}>
+                    Delete
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {urlPaths.map(({ fileName, index }) => (
-                <TableRow key={`${fileName}-${index}`}>
-                  <TableCell>{fileName}</TableCell>
-                  <TableCell>
-                    <Button variant="outlined" color="error" onClick={() => handleDeleteClick(file)}>
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </>}
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
 
       <Typography variant="body2">Upload Files</Typography>
@@ -164,7 +162,7 @@ const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collection
         Choose Files
       </Button>
 
-      {uploadedFiles.length > 0 &&
+      {/* {uploadedFiles.length > 0 &&
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {uploadedFiles.map((file) => (
             <Chip
@@ -174,7 +172,7 @@ const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collection
             />
           ))}
         </Box>
-      }
+      } */}
 
       <Dialog open={openDialog} onClose={handleCancelDelete}>
         <DialogTitle>Confirm Deletion</DialogTitle>
@@ -260,7 +258,7 @@ const EditCollection = () => {
       setStartDate(formatDateToDatetimeLocal(collection?.time_slots[0].startDate) || '');
       setEndDate(formatDateToDatetimeLocal(collection?.time_slots[0].endDate) || '');
       setSelectedDevices(collection?.alloted_devices || []);
-      // setUploadedFiles(collection?.url_paths?.map((path) => ({ name: path })) || []);
+      setUploadedFiles(collection?.url_paths?.map((path) => ({ name: path })) || []);
       setUrlPaths(collection?.url_paths || []);
     }
   }, [loading]);
@@ -282,7 +280,7 @@ const EditCollection = () => {
 
     try {
       const response = await createCollection(newCollection, token);
-      const uploadResponse = await addFilesToCollections(collectionName, uploadedFiles, token)
+      // const uploadResponse = await addFilesToCollections(collectionName, uploadedFiles, token)
       navigate('/content');
     } catch (error) {
       console.error('Failed to create collection:', error);
@@ -509,7 +507,6 @@ const EditCollection = () => {
 
         <FileUpload
           uploadedFiles={uploadedFiles}
-          urlPaths={urlPaths}
           onFileUpload={handleFileUpload}
           onDeleteFile={handleDeleteFile}
           collectionName={collectionName}
