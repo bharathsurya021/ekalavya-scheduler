@@ -1,23 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { getDevices } from '../api/devices';
 
 const UseFetchScreens = () => {
   const [screens, setScreens] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchScreens = async () => {
-      const fetchedScreens = await getDevices();
-      setScreens(fetchedScreens);
+      try {
+        setLoading(true);
+        const fetchedScreens = await getDevices();
+        setScreens(fetchedScreens);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchScreens();
   }, []);
 
-  const addScreen = useCallback((newScreen) => {
-    setScreens((prevScreens) => [...prevScreens, newScreen]);
-  }, []);
 
-  return { screens, addScreen };
+
+  return { screens, loading, error };
 };
 
 export default UseFetchScreens;
