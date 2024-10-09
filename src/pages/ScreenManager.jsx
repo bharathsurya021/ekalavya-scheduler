@@ -4,11 +4,11 @@ import { Typography, Stack, Button, CircularProgress, Alert } from '@mui/materia
 import DashboardLayout from '../layouts/DashboardLayout';
 import ScreenList from '../utilities/screen/ScreenList';
 import ScreenFilter from '../utilities/screen/ScreenFilter';
-import UseFetchScreens from '../hooks/useFetchScreens';
+import useFetchScreens from '../hooks/useFetchScreens';
 import { Add } from '@mui/icons-material';
 
 const ScreenManager = () => {
-  const { screens, loading, error } = UseFetchScreens();
+  const { screens, loading, error } = useFetchScreens();
   const [filteredScreens, setFilteredScreens] = useState(screens);
   const navigate = useNavigate();
 

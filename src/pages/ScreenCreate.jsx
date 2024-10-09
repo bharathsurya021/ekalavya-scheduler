@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Typography, TextField, Button, Stack, Box } from '@mui/material';
+import { TextField, Button, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { createDevice } from '../api/devices';
