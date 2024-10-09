@@ -10,6 +10,7 @@ import CreateScreen from './pages/ScreenCreate';
 import CreateCollection from './pages/ContentCreate';
 import ContentManager from './pages/ContentManager';
 import { useAuth } from './utilities/AuthContext';
+import EditCollection from './pages/ContentEdit';
 
 const Router = () => {
   const { isAuthenticated } = useAuth();
@@ -48,6 +49,10 @@ const Router = () => {
         {
           path: 'content/create',
           element: < CreateCollection />,
+        },
+        {
+          path: 'content/edit/:collectionName',
+          element: < EditCollection />,
         },
       ],
     },

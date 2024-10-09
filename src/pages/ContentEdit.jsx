@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import {
   Typography,
   TextField,
@@ -12,12 +12,24 @@ import {
   Box,
   Grid,
   OutlinedInput,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Paper,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { addFilesToCollections, createCollection } from '../api/collections';
+import { addFilesToCollections, createCollection, deleteFileFromCollection } from '../api/collections';
 import { useAuth } from '../utilities/AuthContext';
 import useFetchScreens from '../hooks/useFetchScreens';
+import useFetchCollectionById from '../hooks/useFetchCollection';
 
 const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeChange, onAddTimeSlot }) => (
   <Grid container spacing={2} alignItems={"center"} sx={{ marginTop: "0px!important" }}>
@@ -80,33 +92,110 @@ const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateC
   </Grid>
 ));
 
-const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile }) => (
-  <Stack spacing={2}>
-    <Typography variant="body2">Upload Files</Typography>
-    <TextField
-      accept="*"
-      id="file-upload"
-      sx={{ display: 'none' }}
-      type="file"
-      inputProps={{ multiple: true }}
-      onChange={onFileUpload}
-    />
-    <Button sx={{ "width": "120px!important" }} variant="contained" component="label" htmlFor="file-upload">
-      Choose Files
-    </Button>
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-      {uploadedFiles.map((file) => (
-        <Chip
-          key={`${file.name}-${file.lastModified}`}
-          label={file.name}
-          onDelete={() => onDeleteFile(file)}
-        />
-      ))}
-    </Box>
-  </Stack>
-));
+const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collectionName, token, urlPaths }) => {
+  const [openDialog, setOpenDialog] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
 
-const CreateCollectionPage = () => {
+  const handleDeleteClick = (file) => {
+    setFileToDelete(file);
+    setOpenDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (fileToDelete) {
+      try {
+        const fileName = fileToDelete.name.split("/")[1];
+        await deleteFileFromCollection(collectionName, fileName, token);
+        // Update the uploadedFiles in the parent component
+        onDeleteFile(fileToDelete);
+      } catch (error) {
+        console.error('Failed to delete file:', error);
+      }
+      setFileToDelete(null);
+    }
+    setOpenDialog(false);
+  };
+
+  const handleCancelDelete = () => {
+    setFileToDelete(null);
+    setOpenDialog(false);
+  };
+
+  return (
+    <Stack spacing={2}>
+      {urlPaths.length > 0 && <>
+        <Typography variant="body2">Uploaded Files</Typography>
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>File Name</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {urlPaths.map(({ fileName, index }) => (
+                <TableRow key={`${fileName}-${index}`}>
+                  <TableCell>{fileName}</TableCell>
+                  <TableCell>
+                    <Button variant="outlined" color="error" onClick={() => handleDeleteClick(file)}>
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </>}
+
+
+      <Typography variant="body2">Upload Files</Typography>
+      <TextField
+        accept="*"
+        id="file-upload"
+        sx={{ display: 'none' }}
+        type="file"
+        inputProps={{ multiple: true }}
+        onChange={onFileUpload}
+      />
+      <Button sx={{ "width": "120px!important" }} variant="contained" component="label" htmlFor="file-upload">
+        Choose Files
+      </Button>
+
+      {uploadedFiles.length > 0 &&
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+          {uploadedFiles.map((file) => (
+            <Chip
+              key={`${file.name}-${file.lastModified}`}
+              label={file.name}
+              onDelete={() => onDeleteFile(file)}
+            />
+          ))}
+        </Box>
+      }
+
+      <Dialog open={openDialog} onClose={handleCancelDelete}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this file: {fileToDelete?.name}?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="secondary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Stack>
+  );
+});
+
+
+const EditCollection = () => {
   const [collectionName, setCollectionName] = useState('');
   const [frequency, setFrequency] = useState('');
   const [daysOfWeek, setDaysOfWeek] = useState([]);
@@ -121,10 +210,30 @@ const CreateCollectionPage = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [urlPaths, setUrlPaths] = useState([]);
   const { token } = useAuth();
+  const { collectionName: id } = useParams();
   const { screens } = useFetchScreens();
+  const { collection, loading, error } = useFetchCollectionById(id, token)
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const formatDateToDatetimeLocal = (dateInput) => {
+    // Convert to Date object if input is a string
+    const date = new Date(dateInput)
 
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date'; // Handle invalid date
+    }
+
+    const padToTwoDigits = (num) => (num < 10 ? `0${num}` : num);
+
+    const year = date.getFullYear();
+    const month = padToTwoDigits(date.getMonth() + 1); // Months are zero-based
+    const day = padToTwoDigits(date.getDate());
+    const hours = padToTwoDigits(date.getHours());
+    const minutes = padToTwoDigits(date.getMinutes());
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
   const validateForm = () => {
     const newErrors = {};
     if (!collectionName) newErrors.collectionName = "Collection Name is required";
@@ -139,6 +248,22 @@ const CreateCollectionPage = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  useEffect(() => {
+    if (!loading) {
+      setCollectionName(collection?.collection_name || '');
+      setFrequency(collection?.frequency || '');
+      setDaysOfWeek(collection?.days_of_week || []);
+      setDayOfMonth(collection?.day_of_month || '');
+      setDayOfYear(collection?.day_of_year || '');
+      setTimeSlots(collection?.time_slots || []);
+      setStartDate(formatDateToDatetimeLocal(collection?.time_slots[0].startDate) || '');
+      setEndDate(formatDateToDatetimeLocal(collection?.time_slots[0].endDate) || '');
+      setSelectedDevices(collection?.alloted_devices || []);
+      // setUploadedFiles(collection?.url_paths?.map((path) => ({ name: path })) || []);
+      setUrlPaths(collection?.url_paths || []);
+    }
+  }, [loading]);
 
   const handleCreateCollection = async () => {
     if (!validateForm()) return;
@@ -173,6 +298,7 @@ const CreateCollectionPage = () => {
 
   const handleDeleteFile = useCallback((fileToDelete) => {
     setUploadedFiles((prev) => prev.filter(file => file.name !== fileToDelete.name));
+    setUrlPaths((prev) => prev.filter(file => file.name !== fileToDelete.name));
   }, []);
 
   const handleDaysOfWeekChange = useCallback((event) => {
@@ -201,19 +327,23 @@ const CreateCollectionPage = () => {
     setErrors((prev) => ({ ...prev, timeSlots: undefined }));
   }, [startTime, endTime, startDate, endDate]);
   const handleDeleteTimeSlot = useCallback((slotIndex, timeIndex) => {
-    setTimeSlots((prev) =>
-      prev.map((slot, i) => {
+    setTimeSlots((prev) => {
+      // Remove the specific time slot
+      const updatedSlots = prev.map((slot, i) => {
         if (i === slotIndex) {
-          // Remove the specific time slot
           return {
             ...slot,
             timeSlot: slot.timeSlot.filter((_, j) => j !== timeIndex),
           };
         }
         return slot;
-      })
-    );
-  }, [timeSlots]);
+      });
+
+      // Filter out slots with empty timeSlot arrays
+      return updatedSlots.filter((slot) => slot.timeSlot.length > 0);
+    });
+  }, []);
+
 
   const handleDeviceChange = useCallback((event) => {
     const { target: { value } } = event;
@@ -238,7 +368,7 @@ const CreateCollectionPage = () => {
   }, []);
 
   return (
-    <DashboardLayout title="Create Collection" subtitle="Add a new collection for your content.">
+    <DashboardLayout title="Edit Collection" subtitle="Edit collection for your content.">
       <Stack spacing={2} mb={3}>
         <TextField
           required
@@ -379,8 +509,11 @@ const CreateCollectionPage = () => {
 
         <FileUpload
           uploadedFiles={uploadedFiles}
+          urlPaths={urlPaths}
           onFileUpload={handleFileUpload}
           onDeleteFile={handleDeleteFile}
+          collectionName={collectionName}
+          token={token}
         />
 
         <FormControl required error={!!errors.selectedDevices}>
@@ -407,7 +540,7 @@ const CreateCollectionPage = () => {
           </Grid>
           <Grid item xs={6} >
             <Button sx={{ width: '100%' }} variant="contained" color="primary" onClick={handleCreateCollection}>
-              Create Collection
+              Save
             </Button>
           </Grid>
         </Grid>
@@ -416,4 +549,4 @@ const CreateCollectionPage = () => {
   );
 };
 
-export default CreateCollectionPage;
+export default EditCollection;

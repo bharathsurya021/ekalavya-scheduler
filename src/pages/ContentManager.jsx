@@ -2,7 +2,7 @@ import React from 'react';
 import { Typography, Stack, Button, CircularProgress, Alert } from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
 import CollectionList from '../utilities/collection/CollectionList';
-import useFetchCollections from '../hooks/UseFetchCollections';
+import useFetchCollections from '../hooks/useFetchCollections';
 import { useNavigate } from 'react-router-dom';
 
 const ContentManager = () => {
@@ -14,7 +14,7 @@ const ContentManager = () => {
   };
   const handleOptionClick = (action, collectionName) => {
     if (action === 'Edit' || action === 'Preview') {
-      navigate(`/content/${collectionName}`);
+      navigate(`/content/edit/${collectionName}`);
     }
   };
 

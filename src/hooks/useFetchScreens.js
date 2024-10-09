@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDevices } from '../api/devices';
 
-const UseFetchScreens = () => {
+const useFetchScreens = () => {
   const [screens, setScreens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,4 +27,4 @@ const UseFetchScreens = () => {
   return { screens, loading, error };
 };
 
-export default UseFetchScreens;
+export default useFetchScreens;

@@ -96,3 +96,18 @@ export const downloadFile = async (collectionName, fileName, token) => {
     throw error;
   }
 };
+
+export const getCollectionById = async (collectionName, token) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/${collectionName}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.collection;
+  } catch (error) {
+    console.error('Error fetching collection:', error.response ? error.response.data : error.message);
+    throw error;
+  }
+
+};

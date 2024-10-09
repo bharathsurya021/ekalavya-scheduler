@@ -21,9 +21,9 @@ const useFetchCollections = () => {
 
     fetchCollections();
   }, []);
+
   const onDelete = async (collectionName) => {
     setCollections((prev) => prev.filter(col => col.collection_name !== collectionName));
-
   };
   return { collections, loading, error, onDelete };
 };
