@@ -32,7 +32,7 @@ const Router = () => {
         <PrivateLayout />
       ),
       children: [
-        { path: '', element: <Navigate to="/dashboard/screens" /> },
+        { path: '', element: <ScreenManager /> },
         {
           path: 'screens',
           element: <ScreenManager />,
@@ -52,6 +52,10 @@ const Router = () => {
         },
         {
           path: 'content/edit/:collectionName',
+          element: < EditCollection />,
+        },
+        {
+          path: 'content/view/:collectionName',
           element: < EditCollection />,
         },
       ],

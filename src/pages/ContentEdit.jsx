@@ -24,20 +24,21 @@ import {
   DialogActions,
   Paper,
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { addFilesToCollections, createCollection, deleteFileFromCollection } from '../api/collections';
 import { useAuth } from '../utilities/AuthContext';
 import useFetchScreens from '../hooks/useFetchScreens';
 import useFetchCollectionById from '../hooks/useFetchCollection';
 
-const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeChange, onAddTimeSlot }) => (
+const TimeSlotInput = memo(({ isDisabled, startTime, endTime, onStartTimeChange, onEndTimeChange, onAddTimeSlot }) => (
   <Grid container spacing={2} alignItems={"center"} sx={{ marginTop: "0px!important" }}>
     <Grid item xs={5}>
       <TextField
         type="time"
         value={startTime}
         onChange={onStartTimeChange}
+        InputProps={{ readOnly: isDisabled }}
         fullWidth
         required
         inputProps={{ step: 300 }} // Allow for 5-minute intervals
@@ -48,6 +49,7 @@ const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeCh
         type="time"
         value={endTime}
         onChange={onEndTimeChange}
+        InputProps={{ readOnly: isDisabled }}
         fullWidth
         required
         inputProps={{ step: 300 }} // Allow for 5-minute intervals
@@ -55,6 +57,7 @@ const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeCh
     </Grid>
     <Grid item xs={2}>
       <Button
+        disabled={!startTime || !endTime}
         variant="contained"
         color="primary"
         onClick={onAddTimeSlot}
@@ -65,13 +68,14 @@ const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeCh
   </Grid>
 ));
 
-const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateChange, error }) => (
+const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateChange, error, isDisabled }) => (
   <Grid container spacing={2} alignItems={"center"} sx={{ marginTop: "0px!important" }}>
     <Grid item xs={6}>
       <TextField
         type="datetime-local"
         value={startDate}
         onChange={onStartDateChange}
+        InputProps={{ readOnly: isDisabled }}
         fullWidth
         required
         error={!!error.startDate}
@@ -83,6 +87,7 @@ const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateC
         type="datetime-local"
         value={endDate}
         onChange={onEndDateChange}
+        InputProps={{ readOnly: isDisabled }}
         fullWidth
         required
         error={!!error.endDate}
@@ -92,7 +97,7 @@ const DateRangeInput = memo(({ startDate, endDate, onStartDateChange, onEndDateC
   </Grid>
 ));
 
-const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collectionName, token }) => {
+const FileUpload = memo(({ uploadedFiles, uploadNewFiles, onFileUpload, onDeleteFileUpload, onDeleteFileUploaded, collectionName, token, isDisabled }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
 
@@ -107,7 +112,7 @@ const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collection
         const fileName = fileToDelete.name.split("/")[1];
         await deleteFileFromCollection(collectionName, fileName, token);
         // Update the uploadedFiles in the parent component
-        onDeleteFile(fileToDelete);
+        onDeleteFileUploaded(fileToDelete);
       } catch (error) {
         console.error('Failed to delete file:', error);
       }
@@ -138,7 +143,7 @@ const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collection
               <TableRow key={`${file.name}-${file.lastModified}`}>
                 <TableCell>{file.name}</TableCell>
                 <TableCell>
-                  <Button variant="outlined" color="error" onClick={() => handleDeleteClick(file)}>
+                  <Button disabled={isDisabled} variant="outlined" color="error" onClick={() => handleDeleteClick(file)}>
                     Delete
                   </Button>
                 </TableCell>
@@ -148,31 +153,34 @@ const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collection
         </Table>
       </TableContainer>
 
+      {!isDisabled && (<>
+        <Typography variant="body2">Upload Files</Typography>
+        <TextField
+          accept="*"
+          id="file-upload"
+          sx={{ display: 'none' }}
+          type="file"
+          inputProps={{ multiple: true }}
+          onChange={onFileUpload}
+        />
+        <Button sx={{ "width": "120px!important" }} variant="contained" component="label" htmlFor="file-upload">
+          Choose Files
+        </Button>
 
-      <Typography variant="body2">Upload Files</Typography>
-      <TextField
-        accept="*"
-        id="file-upload"
-        sx={{ display: 'none' }}
-        type="file"
-        inputProps={{ multiple: true }}
-        onChange={onFileUpload}
-      />
-      <Button sx={{ "width": "120px!important" }} variant="contained" component="label" htmlFor="file-upload">
-        Choose Files
-      </Button>
+        {uploadNewFiles.length > 0 &&
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {uploadNewFiles.map((file) => (
+              <Chip
+                key={`${file.name}-${file.lastModified}`}
+                label={file.name}
+                onDelete={() => onDeleteFileUpload(file)}
+              />
+            ))}
+          </Box>
+        }
+      </>
+      )}
 
-      {/* {uploadedFiles.length > 0 &&
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-          {uploadedFiles.map((file) => (
-            <Chip
-              key={`${file.name}-${file.lastModified}`}
-              label={file.name}
-              onDelete={() => onDeleteFile(file)}
-            />
-          ))}
-        </Box>
-      } */}
 
       <Dialog open={openDialog} onClose={handleCancelDelete}>
         <DialogTitle>Confirm Deletion</DialogTitle>
@@ -194,6 +202,16 @@ const FileUpload = memo(({ uploadedFiles, onFileUpload, onDeleteFile, collection
 
 
 const EditCollection = () => {
+  const { collectionName: id } = useParams();
+  const location = useLocation()
+  const pathSegments = location.pathname.split('/');
+  const editSegment = pathSegments.includes('edit')
+  const viewSegment = pathSegments.includes('view')
+  const { token } = useAuth();
+  const { collection, loading, error } = useFetchCollectionById(id, token)
+  const { screens } = useFetchScreens();
+  const navigate = useNavigate();
+
   const [collectionName, setCollectionName] = useState('');
   const [frequency, setFrequency] = useState('');
   const [daysOfWeek, setDaysOfWeek] = useState([]);
@@ -206,13 +224,11 @@ const EditCollection = () => {
   const [endDate, setEndDate] = useState('');
   const [selectedDevices, setSelectedDevices] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadFiles, setUploadFiles] = useState([]);
   const [urlPaths, setUrlPaths] = useState([]);
-  const { token } = useAuth();
-  const { collectionName: id } = useParams();
-  const { screens } = useFetchScreens();
-  const { collection, loading, error } = useFetchCollectionById(id, token)
-  const navigate = useNavigate();
+  const [newUrlPaths, setNewUrlPaths] = useState([]);
   const [errors, setErrors] = useState({});
+
   const formatDateToDatetimeLocal = (dateInput) => {
     // Convert to Date object if input is a string
     const date = new Date(dateInput)
@@ -243,11 +259,21 @@ const EditCollection = () => {
     if (!endDate) newErrors.endDate = "End Date is required";
     if (!timeSlots.length) newErrors.timeSlots = "At least one time slot is required";
     if (!selectedDevices.length) newErrors.selectedDevices = "At least one device must be selected";
+    // if (!checkValidFileName(uploadedFiles, uploadFiles)) newErrors.fileUpload = "Try uploading file with different filename since its already exists"
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkValidFileName = (files) => {
+    const cleanFileNameFromUploadedFiles = uploadedFiles.map((file) => file.name.split("/")[1])
+    const isFileNameExists = files.some((file) => cleanFileNameFromUploadedFiles.includes(file.name))
+    return isFileNameExists;
+  }
+
   useEffect(() => {
+    if (!token) {
+      navigate('/')
+    }
     if (!loading) {
       setCollectionName(collection?.collection_name || '');
       setFrequency(collection?.frequency || '');
@@ -259,13 +285,15 @@ const EditCollection = () => {
       setEndDate(formatDateToDatetimeLocal(collection?.time_slots[0].endDate) || '');
       setSelectedDevices(collection?.alloted_devices || []);
       setUploadedFiles(collection?.url_paths?.map((path) => ({ name: path })) || []);
-      setUrlPaths(collection?.url_paths || []);
+      setUrlPaths(collection?.url_paths || [])
     }
-  }, [loading]);
+
+  }, [loading, token]);
+
 
   const handleCreateCollection = async () => {
     if (!validateForm()) return;
-
+    const updatedUrlPaths = [...urlPaths, ...newUrlPaths];
     const newCollection = {
       collection_name: collectionName,
       collection_id: collectionName,
@@ -275,12 +303,13 @@ const EditCollection = () => {
       day_of_year: frequency === 'Yearly' ? dayOfYear : undefined,
       time_slots: timeSlots,
       alloted_devices: selectedDevices,
-      url_paths: urlPaths,
+      url_paths: updatedUrlPaths,
     };
-
     try {
       const response = await createCollection(newCollection, token);
-      // const uploadResponse = await addFilesToCollections(collectionName, uploadedFiles, token)
+      if (newUrlPaths.length > 0) {
+        const uploadResponse = await addFilesToCollections(collectionName, uploadFiles, token)
+      }
       navigate('/dashboard/content');
     } catch (error) {
       console.error('Failed to create collection:', error);
@@ -289,21 +318,43 @@ const EditCollection = () => {
 
   const handleFileUpload = useCallback((event) => {
     const files = Array.from(event.target.files);
-    const newUrlPaths = files.map((file) => `${collectionName}/${file.name}`);
-    setUploadedFiles((prev) => [...prev, ...files]);
-    setUrlPaths((prev) => [...prev, ...newUrlPaths]);
-  }, [collectionName]);
+    if (checkValidFileName(files)) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        fileUpload: 'Try uploading file with different filename since its already exists.',
+      }));
 
-  const handleDeleteFile = useCallback((fileToDelete) => {
+      return
+    }
+    const currUrlPaths = files.map((file) => `${collectionName}/${file.name}`);
+    setUploadFiles((prev) => [...prev, ...files]);
+    setNewUrlPaths((prev) => [...prev, ...currUrlPaths]);
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      fileUpload: undefined,
+    }));
+
+  }, [uploadFiles, collectionName]);
+
+  const handleDeleteFileFromUploaded = useCallback((fileToDelete) => {
     setUploadedFiles((prev) => prev.filter(file => file.name !== fileToDelete.name));
-    setUrlPaths((prev) => prev.filter(file => file.name !== fileToDelete.name));
+
+    setUrlPaths((prev) => {
+      const updatedPaths = prev.filter(file => {
+        return file !== fileToDelete.name
+      })
+      return updatedPaths;
+    });
+  }, []);
+  const handleDeleteFileFromUpload = useCallback((fileToDelete) => {
+    setUploadFiles((prev) => prev.filter(file => file.name !== fileToDelete.name));
+    setNewUrlPaths((prev) => prev.filter(file => file.split("/")[1] !== fileToDelete.name));
   }, []);
 
   const handleDaysOfWeekChange = useCallback((event) => {
     const { target: { value } } = event;
     setDaysOfWeek(typeof value === 'string' ? value.split(',') : value);
   }, []);
-
   const handleAddTimeSlot = useCallback(() => {
     if (!startTime || !endTime) {
       setErrors((prev) => ({ ...prev, timeSlots: 'Both Start Time and End Time are required!' }));
@@ -320,6 +371,8 @@ const EditCollection = () => {
         }
       ]
     };
+    setStartTime('')
+    setEndTime('')
 
     setTimeSlots((prev) => [...prev, newTimeSlot]);
     setErrors((prev) => ({ ...prev, timeSlots: undefined }));
@@ -361,15 +414,15 @@ const EditCollection = () => {
     setEndDate('');
     setErrors({});
     setSelectedDevices([]);
-    setUploadedFiles([]);
-    setUrlPaths([]);
+    setUploadFiles([]);
+    setNewUrlPaths([]);
   }, []);
-
   return (
-    <DashboardLayout title="Edit Collection" subtitle="Edit collection for your content.">
+    <DashboardLayout title={viewSegment ? "View Collection" : "Edit Collection"} subtitle={viewSegment ? "View collection content." : "Edit collection for your content."}>
       <Stack spacing={2} mb={3}>
         <TextField
           required
+          inputProps={{ readOnly: viewSegment, }}
           label="Collection Name"
           value={collectionName}
           onChange={(e) => {
@@ -385,6 +438,7 @@ const EditCollection = () => {
             labelId="frequency-label"
             value={frequency}
             input={<OutlinedInput label={"Frequency"} />}
+            inputProps={{ readOnly: viewSegment, }}
             onChange={(e) => {
               setFrequency(e.target.value);
               setErrors((prev) => ({ ...prev, frequency: undefined }));
@@ -405,6 +459,7 @@ const EditCollection = () => {
               required
               labelId="daysOfWeek-label"
               multiple
+              inputProps={{ readOnly: viewSegment, }}
               value={daysOfWeek}
               input={<OutlinedInput label={"Days of Week"} />}
               onChange={handleDaysOfWeekChange}
@@ -422,6 +477,7 @@ const EditCollection = () => {
             required
             label="Day of the Month (DD)"
             value={dayOfMonth}
+            inputProps={{ readOnly: viewSegment, }}
             onChange={(e) => {
               setDayOfMonth(e.target.value);
               setErrors((prev) => ({ ...prev, dayOfMonth: undefined }));
@@ -435,6 +491,7 @@ const EditCollection = () => {
           <TextField
             required
             label="Day of the Year (MM:DD)"
+            inputProps={{ readOnly: viewSegment, }}
             value={dayOfYear}
             onChange={(e) => {
               setDayOfYear(e.target.value);
@@ -449,6 +506,7 @@ const EditCollection = () => {
           <Typography variant="body2">Start Date - End Date</Typography>
 
           <DateRangeInput
+            isDisabled={viewSegment}
             startDate={startDate}
             endDate={endDate}
             onStartDateChange={(e) => {
@@ -468,6 +526,7 @@ const EditCollection = () => {
           <Typography variant="body2">Start Time - End Time (HH:MM)</Typography>
 
           <TimeSlotInput
+            isDisabled={viewSegment}
             startTime={startTime}
             endTime={endTime}
             onStartTimeChange={(e) => {
@@ -485,18 +544,34 @@ const EditCollection = () => {
           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
             {timeSlots.map((slot, index) => (
               <Box key={index}>
-                {/* <Typography variant="body2">
-                  Start Date: {new Date(slot.startDate).toLocaleDateString()} - End Date: {new Date(slot.endDate).toLocaleDateString()}
-                </Typography> */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                   {slot.timeSlot.map((time, timeIndex) => (
-                    <Chip
-                      key={timeIndex}
-                      label={`${time.startTime} - ${time.endTime}`}
-                      onDelete={() => handleDeleteTimeSlot(index, timeIndex)}
-                      variant="outlined"
-                      color="primary"
-                    />
+                    viewSegment ? (
+                      <Box
+                        key={timeIndex}
+                        sx={{
+                          border: '1px solid',
+                          borderColor: 'primary.main',
+                          color: 'primary.main',
+                          borderRadius: 1,
+                          padding: '8px',
+                          backgroundColor: 'background.paper',
+                        }}
+                      >
+                        <Typography variant="body2">
+                          {`${time.startTime} - ${time.endTime}`}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Chip
+                        key={timeIndex}
+                        label={`${time.startTime} - ${time.endTime}`}
+                        onDelete={() => handleDeleteTimeSlot(index, timeIndex)}
+                        variant="outlined"
+                        color="primary"
+                      />
+                    )
+
                   ))}
                 </Box>
               </Box>
@@ -506,12 +581,16 @@ const EditCollection = () => {
         </Box>
 
         <FileUpload
+          isDisabled={viewSegment}
           uploadedFiles={uploadedFiles}
+          uploadNewFiles={uploadFiles}
           onFileUpload={handleFileUpload}
-          onDeleteFile={handleDeleteFile}
+          onDeleteFileUploaded={handleDeleteFileFromUploaded}
+          onDeleteFileUpload={handleDeleteFileFromUpload}
           collectionName={collectionName}
           token={token}
         />
+        {errors.fileUpload && <span style={{ color: 'red' }}>{errors.fileUpload}</span>}
 
         <FormControl required error={!!errors.selectedDevices}>
           <InputLabel id="devices-label">Allotted Devices</InputLabel>
@@ -519,6 +598,7 @@ const EditCollection = () => {
             labelId="devices-label"
             multiple
             input={<OutlinedInput label={"Allotted Devices"} />}
+            inputProps={{ readOnly: viewSegment, }}
             value={selectedDevices}
             onChange={handleDeviceChange}
           >
@@ -528,19 +608,21 @@ const EditCollection = () => {
           </Select>
           {errors.selectedDevices && <span style={{ color: 'red' }}>{errors.selectedDevices}</span>}
         </FormControl>
+        {editSegment && (
+          <Grid container spacing={2} justifyContent="space-between" >
+            <Grid item xs={6} sx={{ "paddingLeft": "0px !important" }}>
+              <Button sx={{ width: '100%' }} variant="outlined" color="secondary" onClick={resetForm}>
+                Clear
+              </Button>
+            </Grid>
+            <Grid item xs={6} >
+              <Button sx={{ width: '100%' }} variant="contained" color="primary" onClick={handleCreateCollection}>
+                Save
+              </Button>
+            </Grid>
+          </Grid>
+        )}
 
-        <Grid container spacing={2} justifyContent="space-between" >
-          <Grid item xs={6} sx={{ "paddingLeft": "0px !important" }}>
-            <Button sx={{ width: '100%' }} variant="outlined" color="secondary" onClick={resetForm}>
-              Clear
-            </Button>
-          </Grid>
-          <Grid item xs={6} >
-            <Button sx={{ width: '100%' }} variant="contained" color="primary" onClick={handleCreateCollection}>
-              Save
-            </Button>
-          </Grid>
-        </Grid>
       </Stack>
     </DashboardLayout>
   );

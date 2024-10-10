@@ -13,8 +13,11 @@ const ContentManager = () => {
     navigate('/dashboard/content/create');
   };
   const handleOptionClick = (action, collectionName) => {
-    if (action === 'Edit' || action === 'Preview') {
+    if (action === 'Edit') {
       navigate(`/dashboard/content/edit/${collectionName}`);
+    } else if (action === 'Preview') {
+      navigate(`/dashboard/content/view/${collectionName}`);
+
     }
   };
 
