@@ -217,7 +217,7 @@ const EditCollection = () => {
   const [daysOfWeek, setDaysOfWeek] = useState([]);
   const [dayOfMonth, setDayOfMonth] = useState('');
   const [dayOfYear, setDayOfYear] = useState('');
-  const [timeSlots, setTimeSlots] = useState([]);
+  const [timeSlots, setTimeSlots] = useState({});
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -281,8 +281,8 @@ const EditCollection = () => {
       setDayOfMonth(collection?.day_of_month || '');
       setDayOfYear(collection?.day_of_year || '');
       setTimeSlots(collection?.time_slots || []);
-      setStartDate(formatDateToDatetimeLocal(collection?.time_slots[0].startDate) || '');
-      setEndDate(formatDateToDatetimeLocal(collection?.time_slots[0].endDate) || '');
+      setStartDate(formatDateToDatetimeLocal(collection?.time_slots.startDate) || '');
+      setEndDate(formatDateToDatetimeLocal(collection?.time_slots.endDate) || '');
       setSelectedDevices(collection?.alloted_devices || []);
       setUploadedFiles(collection?.url_paths?.map((path) => ({ name: path })) || []);
       setUrlPaths(collection?.url_paths || [])
@@ -362,36 +362,33 @@ const EditCollection = () => {
     }
 
     const newTimeSlot = {
-      startDate: new Date(startDate).toISOString(),
-      endDate: new Date(endDate).toISOString(),
-      timeSlot: [
-        {
-          startTime,
-          endTime
-        }
-      ]
+      startTime,
+      endTime,
     };
-    setStartTime('')
-    setEndTime('')
 
-    setTimeSlots((prev) => [...prev, newTimeSlot]);
+    setTimeSlots((prev) => {
+      const timeSlotsArray = Array.isArray(prev.timeSlot) ? prev.timeSlot : [];
+
+      return {
+        ...prev,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        timeSlot: [...timeSlotsArray, newTimeSlot],
+      };
+    });
+
     setErrors((prev) => ({ ...prev, timeSlots: undefined }));
   }, [startTime, endTime, startDate, endDate]);
-  const handleDeleteTimeSlot = useCallback((slotIndex, timeIndex) => {
-    setTimeSlots((prev) => {
-      // Remove the specific time slot
-      const updatedSlots = prev.map((slot, i) => {
-        if (i === slotIndex) {
-          return {
-            ...slot,
-            timeSlot: slot.timeSlot.filter((_, j) => j !== timeIndex),
-          };
-        }
-        return slot;
-      });
 
-      // Filter out slots with empty timeSlot arrays
-      return updatedSlots.filter((slot) => slot.timeSlot.length > 0);
+  const handleDeleteTimeSlot = useCallback((timeSlotIndex) => {
+    setTimeSlots((prev) => {
+      const { startDate, endDate, timeSlot } = prev
+      const updatedTimeSlot = timeSlot.filter((_, index) => index !== timeSlotIndex);
+      return {
+        startDate,
+        endDate,
+        timeSlot: updatedTimeSlot,
+      };
     });
   }, []);
 
@@ -542,40 +539,36 @@ const EditCollection = () => {
           {errors.timeSlots && <span style={{ color: 'red' }}>{errors.timeSlots}</span>}
 
           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-            {timeSlots.map((slot, index) => (
-              <Box key={index}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                  {slot.timeSlot.map((time, timeIndex) => (
-                    viewSegment ? (
-                      <Box
-                        key={timeIndex}
-                        sx={{
-                          border: '1px solid',
-                          borderColor: 'primary.main',
-                          color: 'primary.main',
-                          borderRadius: 1,
-                          padding: '8px',
-                          backgroundColor: 'background.paper',
-                        }}
-                      >
-                        <Typography variant="body2">
-                          {`${time.startTime} - ${time.endTime}`}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Chip
-                        key={timeIndex}
-                        label={`${time.startTime} - ${time.endTime}`}
-                        onDelete={() => handleDeleteTimeSlot(index, timeIndex)}
-                        variant="outlined"
-                        color="primary"
-                      />
-                    )
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              {timeSlots?.timeSlot?.map((time, timeIndex) => (
+                viewSegment ? (
+                  <Box
+                    key={timeIndex}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'primary.main',
+                      color: 'primary.main',
+                      borderRadius: 1,
+                      padding: '8px',
+                      backgroundColor: 'background.paper',
+                    }}
+                  >
+                    <Typography variant="body2">
+                      {`${time.startTime} - ${time.endTime}`}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Chip
+                    key={timeIndex}
+                    label={`${time.startTime} - ${time.endTime}`}
+                    onDelete={() => handleDeleteTimeSlot(index, timeIndex)}
+                    variant="outlined"
+                    color="primary"
+                  />
+                )
 
-                  ))}
-                </Box>
-              </Box>
-            ))}
+              ))}
+            </Box>
           </Box>
 
         </Box>

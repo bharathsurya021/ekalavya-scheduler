@@ -112,7 +112,7 @@ const CreateCollectionPage = () => {
   const [daysOfWeek, setDaysOfWeek] = useState([]);
   const [dayOfMonth, setDayOfMonth] = useState('');
   const [dayOfYear, setDayOfYear] = useState('');
-  const [timeSlots, setTimeSlots] = useState([]);
+  const [timeSlots, setTimeSlots] = useState({});
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [startDate, setStartDate] = useState('');
@@ -134,7 +134,7 @@ const CreateCollectionPage = () => {
     if (frequency === 'Yearly' && !dayOfYear) newErrors.dayOfYear = "Day of the Year is required";
     if (!startDate) newErrors.startDate = "Start Date is required";
     if (!endDate) newErrors.endDate = "End Date is required";
-    if (!timeSlots.length) newErrors.timeSlots = "At least one time slot is required";
+    if (!timeSlots?.timeSlot.length) newErrors.timeSlots = "At least one time slot is required";
     if (!selectedDevices.length) newErrors.selectedDevices = "At least one device must be selected";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -147,9 +147,9 @@ const CreateCollectionPage = () => {
       collection_name: collectionName,
       collection_id: collectionName,
       frequency,
-      days_of_week: frequency === 'Weekly' ? daysOfWeek : undefined,
-      day_of_month: frequency === 'Monthly' ? dayOfMonth : undefined,
-      day_of_year: frequency === 'Yearly' ? dayOfYear : undefined,
+      days_of_week: frequency === 'Weekly' ? daysOfWeek : null,
+      day_of_month: frequency === 'Monthly' ? dayOfMonth : null,
+      day_of_year: frequency === 'Yearly' ? dayOfYear : null,
       time_slots: timeSlots,
       alloted_devices: selectedDevices,
       url_paths: urlPaths,
@@ -179,7 +179,6 @@ const CreateCollectionPage = () => {
     const { target: { value } } = event;
     setDaysOfWeek(typeof value === 'string' ? value.split(',') : value);
   }, []);
-
   const handleAddTimeSlot = useCallback(() => {
     if (!startTime || !endTime) {
       setErrors((prev) => ({ ...prev, timeSlots: 'Both Start Time and End Time are required!' }));
@@ -187,33 +186,36 @@ const CreateCollectionPage = () => {
     }
 
     const newTimeSlot = {
-      startDate: new Date(startDate).toISOString(),
-      endDate: new Date(endDate).toISOString(),
-      timeSlot: [
-        {
-          startTime,
-          endTime
-        }
-      ]
+      startTime,
+      endTime,
     };
 
-    setTimeSlots((prev) => [...prev, newTimeSlot]);
+    setTimeSlots((prev) => {
+      const timeSlotsArray = Array.isArray(prev.timeSlot) ? prev.timeSlot : [];
+
+      return {
+        ...prev,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+        timeSlot: [...timeSlotsArray, newTimeSlot],
+      };
+    });
+
     setErrors((prev) => ({ ...prev, timeSlots: undefined }));
   }, [startTime, endTime, startDate, endDate]);
-  const handleDeleteTimeSlot = useCallback((slotIndex, timeIndex) => {
-    setTimeSlots((prev) =>
-      prev.map((slot, i) => {
-        if (i === slotIndex) {
-          // Remove the specific time slot
-          return {
-            ...slot,
-            timeSlot: slot.timeSlot.filter((_, j) => j !== timeIndex),
-          };
-        }
-        return slot;
-      })
-    );
-  }, [timeSlots]);
+
+
+  const handleDeleteTimeSlot = useCallback((timeSlotIndex) => {
+    setTimeSlots((prev) => {
+      const { startDate, endDate, timeSlot } = prev
+      const updatedTimeSlot = timeSlot.filter((_, index) => index !== timeSlotIndex);
+      return {
+        startDate,
+        endDate,
+        timeSlot: updatedTimeSlot,
+      };
+    });
+  }, []);
 
   const handleDeviceChange = useCallback((event) => {
     const { target: { value } } = event;
@@ -355,24 +357,17 @@ const CreateCollectionPage = () => {
           {errors.timeSlots && <span style={{ color: 'red' }}>{errors.timeSlots}</span>}
 
           <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-            {timeSlots.map((slot, index) => (
-              <Box key={index}>
-                {/* <Typography variant="body2">
-                  Start Date: {new Date(slot.startDate).toLocaleDateString()} - End Date: {new Date(slot.endDate).toLocaleDateString()}
-                </Typography> */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                  {slot.timeSlot.map((time, timeIndex) => (
-                    <Chip
-                      key={timeIndex}
-                      label={`${time.startTime} - ${time.endTime}`}
-                      onDelete={() => handleDeleteTimeSlot(index, timeIndex)}
-                      variant="outlined"
-                      color="primary"
-                    />
-                  ))}
-                </Box>
-              </Box>
-            ))}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+              {timeSlots?.timeSlot?.map((time, timeIndex) => (
+                <Chip
+                  key={timeIndex}
+                  label={`${time.startTime} - ${time.endTime}`}
+                  onDelete={() => handleDeleteTimeSlot(timeIndex)}
+                  variant="outlined"
+                  color="primary"
+                />
+              ))}
+            </Box>
           </Box>
 
         </Box>
