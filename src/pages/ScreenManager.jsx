@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography, Stack, Button, CircularProgress, Alert } from '@mui/material';
+import { Typography, Stack, Button, CircularProgress, Alert, Box } from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
 import ScreenList from '../utilities/screen/ScreenList';
 import ScreenFilter from '../utilities/screen/ScreenFilter';
@@ -54,10 +54,12 @@ const ScreenManager = () => {
         ) : error ? (
           <Alert severity="error">Failed to fetch screens: {error.message}</Alert> // Show error message
         ) : (
-          <>
+          <Stack spacing={2} >
             <ScreenFilter onFilterChange={handleFilterChange} />
-            <ScreenList screens={filteredScreens} onViewScreen={handleViewScreen} />
-          </>
+            <Box>
+              <ScreenList screens={filteredScreens} onViewScreen={handleViewScreen} />
+            </Box>
+          </Stack>
         )}
       </Stack>
     </DashboardLayout>
