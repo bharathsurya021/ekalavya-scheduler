@@ -281,7 +281,7 @@ const EditCollection = () => {
     try {
       const response = await createCollection(newCollection, token);
       // const uploadResponse = await addFilesToCollections(collectionName, uploadedFiles, token)
-      navigate('/content');
+      navigate('/dashboard/content');
     } catch (error) {
       console.error('Failed to create collection:', error);
     }

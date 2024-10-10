@@ -27,12 +27,12 @@ const Router = () => {
       ],
     },
     {
-      path: '/',
+      path: '/dashboard',
       element: (
         <PrivateLayout />
       ),
       children: [
-        { path: 'dashboard', element: <Navigate to="/screens" /> },
+        { path: '', element: <Navigate to="/dashboard/screens" /> },
         {
           path: 'screens',
           element: <ScreenManager />,

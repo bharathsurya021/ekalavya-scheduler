@@ -17,7 +17,7 @@ const ScreenManager = () => {
   }, [screens]);
 
   const handleCreateScreenClick = () => {
-    navigate('/screens/create');
+    navigate('/dashboard/screens/create');
   };
 
   const handleViewScreen = useCallback(

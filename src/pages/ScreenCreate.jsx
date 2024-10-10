@@ -28,7 +28,7 @@ const CreateScreen = () => {
 
     try {
       const response = await createDevice(newScreen, token);
-      navigate('/screens');
+      navigate('/dashboard/screens');
     } catch (error) {
       console.error('Failed to create screen:', error);
     }

@@ -6,12 +6,12 @@ import {
 const MenuItems = [
   {
     label: 'Screen Manager',
-    path: '/screens',
+    path: '/dashboard/screens',
     icon: DashboardOutlined,
   },
   {
     label: 'Content Manager',
-    path: '/content',
+    path: '/dashboard/content',
     icon: LibraryBooksOutlined,
   },
   // {

@@ -10,11 +10,11 @@ const ContentManager = () => {
   const navigate = useNavigate();
 
   const handleCreateCollectionClick = () => {
-    navigate('/content/create');
+    navigate('/dashboard/content/create');
   };
   const handleOptionClick = (action, collectionName) => {
     if (action === 'Edit' || action === 'Preview') {
-      navigate(`/content/edit/${collectionName}`);
+      navigate(`/dashboard/content/edit/${collectionName}`);
     }
   };
 
