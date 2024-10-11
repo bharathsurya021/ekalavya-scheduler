@@ -257,7 +257,7 @@ const EditCollection = () => {
     if (frequency === 'Yearly' && !dayOfYear) newErrors.dayOfYear = "Day of the Year is required";
     if (!startDate) newErrors.startDate = "Start Date is required";
     if (!endDate) newErrors.endDate = "End Date is required";
-    if (!timeSlots.length) newErrors.timeSlots = "At least one time slot is required";
+    if (!timeSlots?.timeSlot?.length) newErrors.timeSlots = "At least one time slot is required";
     if (!selectedDevices.length) newErrors.selectedDevices = "At least one device must be selected";
     // if (!checkValidFileName(uploadedFiles, uploadFiles)) newErrors.fileUpload = "Try uploading file with different filename since its already exists"
     setErrors(newErrors);
@@ -561,7 +561,7 @@ const EditCollection = () => {
                   <Chip
                     key={timeIndex}
                     label={`${time.startTime} - ${time.endTime}`}
-                    onDelete={() => handleDeleteTimeSlot(index, timeIndex)}
+                    onDelete={() => handleDeleteTimeSlot(timeIndex)}
                     variant="outlined"
                     color="primary"
                   />
