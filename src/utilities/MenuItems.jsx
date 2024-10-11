@@ -14,11 +14,11 @@ const MenuItems = [
     path: '/dashboard/content',
     icon: LibraryBooksOutlined,
   },
-  // {
-  //   label: 'Calendar',
-  //   path: '/calendar',
-  //   icon: CalendarMonthOutlined,
-  // },
+  {
+    label: 'Events',
+    path: '/dashboard/events',
+    icon: CalendarMonthOutlined,
+  },
 ];
 
 export default MenuItems;
