@@ -1,11 +1,11 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-
-const BASE_URL = 'http://127.0.0.1:8000/api/v1/auth';
+import config from '../config/config';
+const API_BASE_URL = config.authUrl
 
 export const registerUser = async (userData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/register`, userData, {
+    const response = await axios.post(`${API_BASE_URL}/register`, userData, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -24,7 +24,7 @@ export const loginUser = async (credentials) => {
     formData.append('username', credentials.username);
     formData.append('password', credentials.password);
 
-    const response = await axios.post(`${BASE_URL}/login`, formData, {
+    const response = await axios.post(`${API_BASE_URL}/login`, formData, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -39,7 +39,7 @@ export const loginUser = async (credentials) => {
 
 export const logoutUser = async () => {
   try {
-    const response = await axios.post(`${BASE_URL}/logout`, null, {
+    const response = await axios.post(`${API_BASE_URL}/logout`, null, {
       withCredentials: true,
     });
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://127.0.0.1:8000/api/v1/devices';
+import config from '../config/config';
+const API_BASE_URL = config.devicesUrl;
 
 export const createDevice = async (deviceData, token) => {
   try {
