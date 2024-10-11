@@ -7,7 +7,6 @@ export const getEvents = async () => {
     const response = await axios.get(`${API_BASE_URL}/`, {
       withCredentials: true,
     });
-    console.log(response.data.events)
     return response.data.events;
   } catch (error) {
     console.error('Error fetching collections:', error.response ? error.response.data : error.message);

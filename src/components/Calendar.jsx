@@ -17,40 +17,45 @@ import {
   TextField,
 } from '@mui/material';
 import dayjs from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import useTransformEvents from '../utilities/event/useTransformEvents';
+dayjs.extend(advancedFormat);
 
 const CalendarHeader = ({ currentDate, onPrev, onNext, onToggleView, view }) => {
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={3}>
-      <ButtonGroup variant="contained" aria-label="outlined primary button group">
-        <Button variant="contained" onClick={onPrev}>
-          <ChevronLeft />
-        </Button>
-        <Button variant="contained" onClick={onNext}>
-          <ChevronRight />
-        </Button>
-      </ButtonGroup>
+      {/* <ButtonGroup variant="contained" aria-label="outlined primary button group"> */}
+      <Button variant="contained" onClick={onPrev}>
+        <ChevronLeft />
+      </Button>
+      {/* </ButtonGroup> */}
       <Typography variant="h4" align="center">
         {view === 'day' ? `${currentDate.format('MMMM D, YYYY')}` :
           view === 'week' ? `${currentDate.format('MMMM YYYY')}` :
             `${currentDate.format('MMMM YYYY')}`}
       </Typography>
 
-      <ButtonGroup variant="contained" aria-label="outlined primary button group">
+      {/* <ButtonGroup variant="contained" aria-label="outlined primary button group">
         <Button onClick={() => onToggleView('month')} variant={view === 'month' ? 'contained' : 'outlined'}>Month </Button>
         <Button onClick={() => onToggleView('week')} variant={view === 'week' ? 'contained' : 'outlined'}>Week</Button>
         <Button onClick={() => onToggleView('day')} variant={view === 'day' ? 'contained' : 'outlined'}>Day</Button>
-      </ButtonGroup>
+      </ButtonGroup> */}
+
+      <Button variant="contained" onClick={onNext}>
+        <ChevronRight />
+      </Button>
 
     </Box>
   );
 };
-const DayView = ({ currentDate }) => {
-  const [events, setEvents] = useState([]);
+
+
+const DayView = ({ currentDate, events }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTime, setSelectedTime] = useState('');
   const [eventTitle, setEventTitle] = useState('');
-
+  const currentDay = dayjs(currentDate).date()
   const timeSlots = [
     'All Day',
     ...Array.from({ length: 24 }, (_, i) => `${i}:00`),
@@ -67,10 +72,6 @@ const DayView = ({ currentDate }) => {
   };
 
   const handleSaveEvent = () => {
-    setEvents((prevEvents) => [
-      ...prevEvents,
-      { time: selectedTime, title: eventTitle },
-    ]);
     handleDialogClose();
   };
 
@@ -92,24 +93,38 @@ const DayView = ({ currentDate }) => {
                   backgroundColor: '#ECF2FF',
                 },
               }} >
+                <Box>
+                  {events
+                    .filter((event) => {
+                      const { startTime, endTime, day } = event
+                      const isSameDay = day === currentDay
+                      // Check if the event falls within the specified time slot
+                      const isWithinTimeSlot =
+                        time !== 'All Day' && (
+                          (startTime === time) || // Starts at the exact time
+                          (endTime === time) ||   // Ends at the exact time
+                          (startTime < time && endTime > time) // Event spans the time
+                        );
+
+                      // Return true if it's the same day and within the time slot
+                      return isSameDay && (isWithinTimeSlot);
+                    })
+                    .map((event, idx) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          height: '16px',
+                          backgroundColor: '#1976d2',
+                          color: '#fff',
+                          padding: '2px 5px',
+                          margin: '2px 0',
+                        }}
+                      >
+                        {event.title}
+                      </Box>
+                    ))}
+                </Box>
               </TableCell>
-              <Box>
-                {events
-                  .filter((event) => event.time === time)
-                  .map((event, idx) => (
-                    <Box
-                      key={idx}
-                      sx={{
-                        backgroundColor: '#1976d2',
-                        color: '#fff',
-                        padding: '2px 5px',
-                        margin: '2px 0',
-                      }}
-                    >
-                      {event.title}
-                    </Box>
-                  ))}
-              </Box>
             </TableRow>
           ))}
         </TableBody>
@@ -137,21 +152,63 @@ const DayView = ({ currentDate }) => {
   );
 };
 
-const MonthGrid = ({ daysArray }) => {
-  const weeks = [];
+const MonthGrid = ({ daysArray, events, currentDate }) => {
+  const darkColors = [
+    '#5C6BC0',
+    '#3F51B5',
+    '#3949AB',
+    '#303F9F',
+    '#283593',
+    '#1A237E',
+    '#1976D2',
+    '#1565C0',
+    '#0D47A1',
+    '#7C4DFF',
+    '#651FFF',
+    '#6200EA',
+    '#304FFE',
+    '#00796B',
+    '#00695C',
+    '#004D40',
+    '#8D6E63',
+    '#795548',
+    '#6D4C41',
+    '#5D4037',
+    '#4E342E',
+    '#3E2723',
+    '#757575',
+    '#616161',
+    '#424242',
+    '#212121',
+    '#546E7A',
+    '#455A64',
+    '#37474F',
+    '#263238',
+  ];
 
+  const weeks = [];
   for (let i = 0; i < daysArray.length; i += 7) {
     weeks.push(daysArray.slice(i, i + 7));
   }
+  const currentYear = dayjs(currentDate).year();
+  const currentMonth = dayjs(currentDate).month() + 1;
+
+  const eventsForCurrentMonth = events.filter(event => {
+    return event.year === currentYear && event.month === currentMonth;
+  });
+
   return (
     <TableContainer component={Box}>
       <Table>
         <TableHead>
           <TableRow>
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <TableCell key={day} align="center" size="medium" sx={{
-                border: '1px solid #ddd',
-              }} >
+              <TableCell
+                key={day}
+                align="center"
+                size="medium"
+                sx={{ border: '1px solid #ddd' }}
+              >
                 <Typography variant="h6">{day}</Typography>
               </TableCell>
             ))}
@@ -160,36 +217,61 @@ const MonthGrid = ({ daysArray }) => {
         <TableBody>
           {weeks.map((week, rowIndex) => (
             <TableRow key={rowIndex}>
-              {week.map(({ day, isCurrentMonth }, cellIndex) => (
-                <TableCell
-                  key={cellIndex}
-                  align="center"
-                  sx={{
-                    minWidth: '100px',
-                    width: 'auto',
-                    height: '120px',
-                    padding: '8px',
-                    position: 'relative',
-                    backgroundColor: isCurrentMonth ? 'inherit' : '#f0f0f0',
-                    border: '1px solid #ddd',
-                    '&:hover': {
-                      backgroundColor: isCurrentMonth ? '#ECF2FF' : '#f0f0f0',
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="body1"
+              {week.map(({ day, isCurrentMonth }, cellIndex) => {
+                return (
+                  <TableCell
+                    key={cellIndex}
+                    align="center"
                     sx={{
-                      color: isCurrentMonth ? 'black' : 'gray',
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
+                      minWidth: '100px',
+                      width: 'auto',
+                      height: '120px',
+                      padding: '8px',
+                      position: 'relative',
+                      backgroundColor: isCurrentMonth ? 'inherit' : '#f0f0f0',
+                      border: '1px solid #ddd',
+                      // '&:hover': {
+                      //   backgroundColor: isCurrentMonth ? '#ECF2FF' : '#f0f0f0',
+                      // },
                     }}
                   >
-                    {day}
-                  </Typography>
-                </TableCell>
-              ))}
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: isCurrentMonth ? 'black' : 'gray',
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                      }}
+                    >
+                      {day}
+                    </Typography>
+
+                    {/* Render events for the current day */}
+                    {eventsForCurrentMonth.map((event, index) => {
+                      if (event.day === day) {
+                        const backgroundColor = darkColors[index % darkColors.length];
+                        return (<Box
+                          key={event.id}
+                          sx={{
+                            backgroundColor: backgroundColor,
+                            color: 'white',
+                            borderRadius: '4px',
+                            padding: '2px 4px',
+                            marginTop: '4px',
+                            fontSize: '12px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {`${event.startTime} - ${event.endTime}`}
+                        </Box>)
+                      }
+                    })}
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>
@@ -198,16 +280,14 @@ const MonthGrid = ({ daysArray }) => {
   );
 };
 
-const WeekView = ({ currentDate }) => {
-  const [events, setEvents] = useState([]);
+const WeekView = ({ events }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTime, setSelectedTime] = useState('');
   const [eventTitle, setEventTitle] = useState('');
 
   const timeSlots = ['All Day', ...Array.from({ length: 24 }, (_, i) => `${i}:00`)];
 
-  const startOfWeek = currentDate.startOf('week');
-
+  const firstHour = events[0].start.hour()
   const handleAddEvent = (time, day) => {
     setSelectedTime(time);
     setOpenDialog(true);
@@ -220,10 +300,6 @@ const WeekView = ({ currentDate }) => {
   };
 
   const handleSaveEvent = (day) => {
-    setEvents((prevEvents) => [
-      ...prevEvents,
-      { time: selectedTime, day, title: eventTitle },
-    ]);
     handleDialogClose();
   };
 
@@ -268,23 +344,32 @@ const WeekView = ({ currentDate }) => {
                       },
                     }}
                   >
-                    <Box>
-                      {events
-                        .filter((event) => event.time === time && event.day === day.format('YYYY-MM-DD'))
-                        .map((event, idx) => (
-                          <Box
-                            key={idx}
-                            sx={{
-                              backgroundColor: '#1976d2',
-                              color: '#fff',
-                              padding: '2px 5px',
-                              margin: '2px 0',
-                            }}
-                          >
-                            {event.title}
-                          </Box>
-                        ))}
-                    </Box>
+                    {events
+                      .filter(event => {
+                        const eventStart = event.start
+                        const eventEnd = event.end
+                        const eventHour = eventStart.hour();
+
+                        return (
+                          (eventStart.isSame(day, 'day') && `0${eventHour}:00` === time) ||
+                          (eventEnd.isSame(day, 'day') && `0${eventHour}:00` === time) ||
+                          (eventStart.isAfter(startOfWeek) && eventStart.isBefore(endOfWeek)) ||
+                          (eventEnd.isAfter(startOfWeek) && eventEnd.isBefore(endOfWeek))
+                        );
+                      })
+                      .map((event, idx) => (
+                        <Box
+                          key={idx}
+                          sx={{
+                            backgroundColor: '#1976d2',
+                            color: '#fff',
+                            padding: '2px 5px',
+                            margin: '2px 0',
+                          }}
+                        >
+                          {event.title}
+                        </Box>
+                      ))}
                   </TableCell>
                 );
               })}
@@ -316,6 +401,7 @@ const WeekView = ({ currentDate }) => {
 };
 
 const Calendar = ({ events }) => {
+  const formattedEvents = useTransformEvents(events)
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [view, setView] = useState('month');
 
@@ -391,9 +477,9 @@ const Calendar = ({ events }) => {
         onToggleView={handleToggleView}
         view={view}
       />
-      {view === 'day' && < DayView currentDate={currentDate} />}
-      {view === 'week' && < WeekView currentDate={currentDate} />}
-      {view === 'month' && <MonthGrid daysArray={daysArray} />}
+      {/* {view === 'day' && < DayView currentDate={currentDate} events={formattedEvents} />} */}
+      {/* {view === 'week' && < WeekView events={formattedEvents} />} */}
+      <MonthGrid currentDate={currentDate} daysArray={daysArray} events={formattedEvents} />
     </>
   );
 };

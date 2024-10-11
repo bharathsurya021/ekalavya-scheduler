@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { getEvents } from '../api/events';
 
 const useFetchEvents = () => {
-  const [Events, setEvents] = useState([]);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,7 +22,7 @@ const useFetchEvents = () => {
     fetchEvents();
   }, []);
 
-  return { Events, loading, error };
+  return { events, loading, error };
 };
 
 export default useFetchEvents;

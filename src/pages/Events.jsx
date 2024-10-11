@@ -4,10 +4,10 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import EventFilters from '../utilities/event/EventFilters';
 import useFetchEvents from '../hooks/useFetchEvents';
 import { useAuth } from '../utilities/AuthContext';
-import Calendar from '../components/Calender';
+import Calendar from '../components/Calendar';
 const Events = ({ screen }) => {
         const { token } = useAuth()
-        const { Events: eventsData } = useFetchEvents(token)
+        const { events: eventsData } = useFetchEvents(token)
         const [filteredEvents, setFilteredEvents] = useState(eventsData);
         const [selectedCollection, setSelectedCollection] = useState('');
         const [selectedDevice, setSelectedDevice] = useState('');
@@ -37,7 +37,7 @@ const Events = ({ screen }) => {
                                 onCollectionChange={handleCollectionChange}
                                 onDeviceChange={handleDeviceChange}
                         />
-                        <Calendar />
+                        <Calendar events={eventsData} />
                 </DashboardLayout>
         );
 };
