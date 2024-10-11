@@ -11,6 +11,7 @@ import CreateCollection from './pages/ContentCreate';
 import ContentManager from './pages/ContentManager';
 import { useAuth } from './utilities/AuthContext';
 import EditCollection from './pages/ContentEdit';
+import Events from './pages/Events';
 
 const Router = () => {
   const { isAuthenticated } = useAuth();
@@ -20,19 +21,16 @@ const Router = () => {
       path: '/',
       element: <PublicLayout />,
       children: [
-        { path: '/', element: isAuthenticated ? <Navigate to="/dashboard" /> : <SignIn /> },
-        { path: '/register', element: isAuthenticated ? <Navigate to="/dashboard" /> : <SignUp /> },
-        { path: '404', element: <Error /> },
-        { path: '*', element: <Navigate to="/404" /> },
+        { index: true, element: isAuthenticated ? <Navigate to={'/dashboard'} /> : <SignIn /> },
+        { path: 'register', element: isAuthenticated ? <Navigate to={'/dashboard'} /> : <SignUp /> },
+        { path: '*', element: <Error /> },
       ],
     },
     {
       path: '/dashboard',
-      element: (
-        <PrivateLayout />
-      ),
+      element: <PrivateLayout />,
       children: [
-        { path: '', element: <ScreenManager /> },
+        { index: true, element: <ScreenManager /> },
         {
           path: 'screens',
           element: <ScreenManager />,
@@ -57,6 +55,14 @@ const Router = () => {
         {
           path: 'content/view/:collectionName',
           element: < EditCollection />,
+        },
+        {
+          path: 'events',
+          element: < Events />,
+        },
+        {
+          path: '*',
+          element: < Error />,
         },
       ],
     },
