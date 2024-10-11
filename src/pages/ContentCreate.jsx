@@ -16,7 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { addFilesToCollections, createCollection } from '../api/collections';
-import { useAuth } from '../utilities/AuthContext';
+import { useAuth } from '../components/AuthContext';
 import useFetchScreens from '../hooks/useFetchScreens';
 
 const TimeSlotInput = memo(({ startTime, endTime, onStartTimeChange, onEndTimeChange, onAddTimeSlot }) => (

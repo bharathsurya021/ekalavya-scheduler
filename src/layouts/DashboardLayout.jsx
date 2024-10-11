@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import PageContainer from '../components/containers/PageContainer';
-import DashboardCard from '../utilities/DashboardCard';
+import DashboardCard from '../components/DashboardCard';
 
 const DashboardLayout = ({ title, subtitle, children }) => {
   return (

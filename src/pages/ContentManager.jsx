@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Stack, Button, CircularProgress, Alert, Box } from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
-import CollectionList from '../utilities/collection/CollectionList';
+import CollectionList from '../components/collection/CollectionList';
 import useFetchCollections from '../hooks/useFetchCollections';
 import { useNavigate } from 'react-router-dom';
 import { Add } from '@mui/icons-material';

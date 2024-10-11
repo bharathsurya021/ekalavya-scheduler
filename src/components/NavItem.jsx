@@ -1,6 +1,5 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-// mui imports
 import {
   ListItemIcon,
   ListItem,
@@ -40,7 +39,7 @@ const NavItem = ({ item, level, pathDirect, onClick }) => {
   return (
     <List component="li" disablePadding key={item.label}>
       <ListItemStyled
-        button
+        button={true}
         component={item.external ? 'a' : NavLink}
         to={item.path}
         href={item.external ? item.path : ''}

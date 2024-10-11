@@ -2,8 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Typography, Stack, Button, CircularProgress, Alert, Box } from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
-import ScreenList from '../utilities/screen/ScreenList';
-import ScreenFilter from '../utilities/screen/ScreenFilter';
+import ScreenList from '../components/screen/ScreenList';
+import ScreenFilter from '../components/screen/ScreenFilter';
 import useFetchScreens from '../hooks/useFetchScreens';
 import { Add } from '@mui/icons-material';
 

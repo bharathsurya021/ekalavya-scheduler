@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import DashboardLayout from '../layouts/DashboardLayout';
-import EventFilters from '../utilities/event/EventFilters';
+import EventFilters from '../components/event/EventFilters';
 import useFetchEvents from '../hooks/useFetchEvents';
-import { useAuth } from '../utilities/AuthContext';
+import { useAuth } from '../components/AuthContext';
 import Calendar from '../components/Calendar';
 const Events = ({ screen }) => {
         const { token } = useAuth()

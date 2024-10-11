@@ -19,7 +19,7 @@ import {
 
 import ProfileImg from '../assets/images/user-1.jpg';
 import { logoutUser } from '../api/auth';
-import { useAuth } from '../utilities/AuthContext';
+import { useAuth } from '../components/AuthContext';
 
 const Profile = () => {
   const { logout } = useAuth()

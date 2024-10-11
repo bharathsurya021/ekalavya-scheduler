@@ -3,7 +3,7 @@ import { TextField, Button, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { createDevice } from '../api/devices';
-import { useAuth } from '../utilities/AuthContext';
+import { useAuth } from '../components/AuthContext';
 
 const CreateScreen = () => {
   const [screenName, setScreenName] = useState('UnTitled');

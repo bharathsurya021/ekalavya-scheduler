@@ -27,7 +27,7 @@ import {
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { addFilesToCollections, createCollection, deleteFileFromCollection } from '../api/collections';
-import { useAuth } from '../utilities/AuthContext';
+import { useAuth } from '../components/AuthContext';
 import useFetchScreens from '../hooks/useFetchScreens';
 import useFetchCollectionById from '../hooks/useFetchCollection';
 

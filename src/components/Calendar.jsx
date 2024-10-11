@@ -19,7 +19,7 @@ import {
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import useTransformEvents from '../utilities/event/useTransformEvents';
+import useTransformEvents from '../components/event/useTransformEvents';
 dayjs.extend(advancedFormat);
 
 const CalendarHeader = ({ currentDate, onPrev, onNext, onToggleView, view }) => {

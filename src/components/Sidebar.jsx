@@ -1,6 +1,6 @@
 import { useMediaQuery, Box, Drawer } from '@mui/material';
-import Logo from '../utilities/Logo';
-import SidebarItems from '../utilities/SidebarItems';
+import Logo from '../components/Logo';
+import SidebarItems from '../components/SidebarItems';
 
 const Sidebar = (props) => {
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));

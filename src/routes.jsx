@@ -9,7 +9,7 @@ import ScreenManager from './pages/ScreenManager';
 import CreateScreen from './pages/ScreenCreate';
 import CreateCollection from './pages/ContentCreate';
 import ContentManager from './pages/ContentManager';
-import { useAuth } from './utilities/AuthContext';
+import { useAuth } from './components/AuthContext';
 import EditCollection from './pages/ContentEdit';
 import Events from './pages/Events';
 
