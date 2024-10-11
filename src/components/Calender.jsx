@@ -1,0 +1,401 @@
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Typography,
+  ButtonGroup,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
+  TextField,
+} from '@mui/material';
+import dayjs from 'dayjs';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+
+const CalendarHeader = ({ currentDate, onPrev, onNext, onToggleView, view }) => {
+  return (
+    <Box display="flex" justifyContent="space-between" alignItems="center" marginBottom={3}>
+      <ButtonGroup variant="contained" aria-label="outlined primary button group">
+        <Button variant="contained" onClick={onPrev}>
+          <ChevronLeft />
+        </Button>
+        <Button variant="contained" onClick={onNext}>
+          <ChevronRight />
+        </Button>
+      </ButtonGroup>
+      <Typography variant="h4" align="center">
+        {view === 'day' ? `${currentDate.format('MMMM D, YYYY')}` :
+          view === 'week' ? `${currentDate.format('MMMM YYYY')}` :
+            `${currentDate.format('MMMM YYYY')}`}
+      </Typography>
+
+      <ButtonGroup variant="contained" aria-label="outlined primary button group">
+        <Button onClick={() => onToggleView('month')} variant={view === 'month' ? 'contained' : 'outlined'}>Month </Button>
+        <Button onClick={() => onToggleView('week')} variant={view === 'week' ? 'contained' : 'outlined'}>Week</Button>
+        <Button onClick={() => onToggleView('day')} variant={view === 'day' ? 'contained' : 'outlined'}>Day</Button>
+      </ButtonGroup>
+
+    </Box>
+  );
+};
+const DayView = ({ currentDate }) => {
+  const [events, setEvents] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedTime, setSelectedTime] = useState('');
+  const [eventTitle, setEventTitle] = useState('');
+
+  const timeSlots = [
+    'All Day',
+    ...Array.from({ length: 24 }, (_, i) => `${i}:00`),
+  ];
+
+  const handleAddEvent = (time) => {
+    setSelectedTime(time);
+    setOpenDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    setEventTitle('');
+  };
+
+  const handleSaveEvent = () => {
+    setEvents((prevEvents) => [
+      ...prevEvents,
+      { time: selectedTime, title: eventTitle },
+    ]);
+    handleDialogClose();
+  };
+
+  return (
+    <Box>
+      <Table>
+        <TableBody>
+          {timeSlots.map((time, index) => (
+            <TableRow
+              key={index}
+              sx={{ height: '60px' }}
+            >
+              <TableCell sx={{ width: '120px', border: '1px solid #ddd' }}>
+                <Typography variant="body1" align='center' >{time}</Typography>
+              </TableCell>
+              <TableCell sx={{
+                border: '1px solid #ddd', cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: '#ECF2FF',
+                },
+              }} >
+              </TableCell>
+              <Box>
+                {events
+                  .filter((event) => event.time === time)
+                  .map((event, idx) => (
+                    <Box
+                      key={idx}
+                      sx={{
+                        backgroundColor: '#1976d2',
+                        color: '#fff',
+                        padding: '2px 5px',
+                        margin: '2px 0',
+                      }}
+                    >
+                      {event.title}
+                    </Box>
+                  ))}
+              </Box>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Add Event</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Event Title"
+            fullWidth
+            variant="outlined"
+            value={eventTitle}
+            onChange={(e) => setEventTitle(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose}>Cancel</Button>
+          <Button onClick={handleSaveEvent}>Add</Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
+
+const MonthGrid = ({ daysArray }) => {
+  const weeks = [];
+
+  for (let i = 0; i < daysArray.length; i += 7) {
+    weeks.push(daysArray.slice(i, i + 7));
+  }
+  return (
+    <TableContainer component={Box}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+              <TableCell key={day} align="center" size="medium" sx={{
+                border: '1px solid #ddd',
+              }} >
+                <Typography variant="h6">{day}</Typography>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {weeks.map((week, rowIndex) => (
+            <TableRow key={rowIndex}>
+              {week.map(({ day, isCurrentMonth }, cellIndex) => (
+                <TableCell
+                  key={cellIndex}
+                  align="center"
+                  sx={{
+                    minWidth: '100px',
+                    width: 'auto',
+                    height: '120px',
+                    padding: '8px',
+                    position: 'relative',
+                    backgroundColor: isCurrentMonth ? 'inherit' : '#f0f0f0',
+                    border: '1px solid #ddd',
+                    '&:hover': {
+                      backgroundColor: isCurrentMonth ? '#ECF2FF' : '#f0f0f0',
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: isCurrentMonth ? 'black' : 'gray',
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                    }}
+                  >
+                    {day}
+                  </Typography>
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
+const WeekView = ({ currentDate }) => {
+  const [events, setEvents] = useState([]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedTime, setSelectedTime] = useState('');
+  const [eventTitle, setEventTitle] = useState('');
+
+  const timeSlots = ['All Day', ...Array.from({ length: 24 }, (_, i) => `${i}:00`)];
+
+  const startOfWeek = currentDate.startOf('week');
+
+  const handleAddEvent = (time, day) => {
+    setSelectedTime(time);
+    setOpenDialog(true);
+    setEventTitle('');
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    setEventTitle('');
+  };
+
+  const handleSaveEvent = (day) => {
+    setEvents((prevEvents) => [
+      ...prevEvents,
+      { time: selectedTime, day, title: eventTitle },
+    ]);
+    handleDialogClose();
+  };
+
+  return (
+    <Box>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ minWidth: '100px', width: '100px', border: '1px solid #ddd' }}  ></TableCell>
+            {Array.from({ length: 7 }).map((_, dayIndex) => {
+              const day = startOfWeek.add(dayIndex, 'day');
+              return (
+                <TableCell key={dayIndex} align="center" sx={{ minWidth: '100px', border: '1px solid #ddd' }}>
+                  <Typography variant="subtitle2">
+                    {day.format('ddd')}
+                  </Typography>
+                  <Typography variant="h3">
+                    {day.format('DD')}
+                  </Typography>
+                </TableCell>
+              );
+            })}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {timeSlots.map((time, index) => (
+            <TableRow key={index} sx={{ height: '60px' }}>
+              <TableCell align="center" sx={{ border: '1px solid #ddd' }} >
+                <Typography variant="body2">{time}</Typography>
+              </TableCell>
+              {Array.from({ length: 7 }).map((_, dayIndex) => {
+                const day = startOfWeek.add(dayIndex, 'day');
+
+                return (
+                  <TableCell
+                    key={dayIndex}
+                    onClick={() => time !== 'All Day' && handleAddEvent(time, day.format('YYYY-MM-DD'))}
+                    sx={{
+                      cursor: 'pointer', border: '1px solid #ddd', position: 'relative',
+                      '&:hover': {
+                        backgroundColor: '#ECF2FF',
+                      },
+                    }}
+                  >
+                    <Box>
+                      {events
+                        .filter((event) => event.time === time && event.day === day.format('YYYY-MM-DD'))
+                        .map((event, idx) => (
+                          <Box
+                            key={idx}
+                            sx={{
+                              backgroundColor: '#1976d2',
+                              color: '#fff',
+                              padding: '2px 5px',
+                              margin: '2px 0',
+                            }}
+                          >
+                            {event.title}
+                          </Box>
+                        ))}
+                    </Box>
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Add Event</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Event Title"
+            fullWidth
+            variant="outlined"
+            value={eventTitle}
+            onChange={(e) => setEventTitle(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose}>Cancel</Button>
+          <Button onClick={() => handleSaveEvent(selectedTime)}>Add</Button>
+        </DialogActions>
+      </Dialog>
+    </Box >
+  );
+};
+
+const Calendar = ({ events }) => {
+  const [currentDate, setCurrentDate] = useState(dayjs());
+  const [view, setView] = useState('month');
+
+  const getDaysArray = () => {
+    const daysArray = [];
+    const startOfMonth = currentDate.startOf('month');
+    const endOfMonth = currentDate.endOf('month');
+    const daysInMonth = currentDate.daysInMonth();
+
+    const prevMonthDays = startOfMonth.day();
+    const lastDayOfPrevMonth = startOfMonth.subtract(1, 'month').daysInMonth();
+
+    for (let i = prevMonthDays - 1; i >= 0; i--) {
+      daysArray.push({ day: lastDayOfPrevMonth - i, isCurrentMonth: false });
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      daysArray.push({ day: i, isCurrentMonth: true });
+    }
+
+    const nextMonthDays = 42 - daysArray.length;
+    for (let i = 1; i <= nextMonthDays; i++) {
+      daysArray.push({ day: i, isCurrentMonth: false });
+    }
+
+    return daysArray;
+  };
+
+  const daysArray = getDaysArray();
+
+  const handlePrev = () => {
+    switch (view) {
+      case 'day':
+        setCurrentDate(currentDate.subtract(1, 'day'));
+        break;
+      case 'week':
+        setCurrentDate(currentDate.subtract(1, 'week'));
+        break;
+      case 'month':
+        setCurrentDate(currentDate.subtract(1, 'month'));
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleNext = () => {
+    switch (view) {
+      case 'day':
+        setCurrentDate(currentDate.add(1, 'day'));
+        break;
+      case 'week':
+        setCurrentDate(currentDate.add(1, 'week'));
+        break;
+      case 'month':
+        setCurrentDate(currentDate.add(1, 'month'));
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleToggleView = (newView) => {
+    setView(newView);
+  };
+
+  return (
+    <>
+      <CalendarHeader
+        currentDate={currentDate}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        onToggleView={handleToggleView}
+        view={view}
+      />
+      {view === 'day' && < DayView currentDate={currentDate} />}
+      {view === 'week' && < WeekView currentDate={currentDate} />}
+      {view === 'month' && <MonthGrid daysArray={daysArray} />}
+    </>
+  );
+};
+
+export default Calendar;
