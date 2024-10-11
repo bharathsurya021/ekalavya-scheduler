@@ -4,7 +4,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import EventFilters from '../components/event/EventFilters';
 import useFetchEvents from '../hooks/useFetchEvents';
 import { useAuth } from '../components/AuthContext';
-import Calendar from '../components/Calendar';
+import Calendar from '../components/event/Calendar';
 const Events = ({ screen }) => {
         const { token } = useAuth()
         const { events: eventsData } = useFetchEvents(token)
