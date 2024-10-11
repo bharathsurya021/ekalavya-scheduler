@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled, Container, Box } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
@@ -24,7 +24,24 @@ const PageWrapper = styled('div')(() => ({
 const PrivateLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [initialLoad, setInitialLoad] = useState(true);
 
+  const storedPath = sessionStorage.getItem('currentPath');
+
+  useEffect(() => {
+    if (initialLoad) {
+      if (storedPath && storedPath !== location.pathname) {
+        navigate(storedPath);
+      }
+      setInitialLoad(false);
+    }
+  }, [navigate, storedPath, initialLoad, location.pathname]);
+
+  useEffect(() => {
+    sessionStorage.setItem('currentPath', location.pathname);
+  }, [location.pathname]);
   return (
     <MainWrapper className="mainwrapper">
       <Sidebar
