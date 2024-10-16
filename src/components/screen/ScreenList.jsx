@@ -6,10 +6,10 @@ const ScreenList = memo(({ screens, onViewScreen }) => {
   return (
     <Grid container spacing={2}>
       {screens.map((screen) => (
-        <Grid item sm={3} key={screen.device_id}>
+        <Grid item sm={3} key={screen._id}>
           <ScreenCard
             title={screen.name}
-            id={screen.device_id}
+            id={screen._id}
             onOptionClick={(option) => {
               if (option === 'View' || option === 'Preview') {
                 onViewScreen(screen);

@@ -52,7 +52,6 @@ const CalendarHeader = ({ currentDate, onPrev, onNext, onToggleView, view }) => 
 };
 
 const EventDialog = React.memo(({ event, open, onClose }) => {
-  console.log(event, 'dialog')
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle>Event Details</DialogTitle>
