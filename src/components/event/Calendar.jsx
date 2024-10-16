@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -15,10 +15,11 @@ import {
   DialogActions,
   DialogContent,
   TextField,
+  IconButton,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { ChevronLeft, ChevronRight, CloseOutlined } from '@mui/icons-material';
 import useTransformEvents from './useTransformEvents';
 dayjs.extend(advancedFormat);
 
@@ -49,6 +50,65 @@ const CalendarHeader = ({ currentDate, onPrev, onNext, onToggleView, view }) => 
     </Box>
   );
 };
+
+const EventDialog = React.memo(({ event, open, onClose }) => {
+  console.log(event, 'dialog')
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle>Event Details</DialogTitle>
+      <IconButton
+        aria-label="close"
+        onClick={onClose}
+        sx={(theme) => ({
+          position: 'absolute',
+          right: 8,
+          top: 8,
+          color: theme.palette.grey[500],
+        })}
+      >
+        <CloseOutlined />
+      </IconButton>
+      <DialogContent dividers>
+        {event && (
+          <>
+            <Typography variant="subtitle1"><strong>Collection ID:</strong> {event.collection_id}</Typography>
+            <Typography variant="subtitle2"><strong>Date:</strong> {dayjs(event.startDate).format('MMMM D, YYYY')}</Typography>
+            <Typography variant="subtitle2"><strong>Time:</strong> {event.startTime} - {event.endTime}</Typography>
+            <Typography variant="subtitle2"><strong>Allotted Devices:</strong> {event.alloted_devices.join(', ')}</Typography>
+          </>
+        )}
+      </DialogContent>
+      {/* <DialogActions>
+        <Button onClick={onClose} color="primary">Close</Button>
+      </DialogActions> */}
+    </Dialog>
+  )
+});
+
+
+const EventCell = React.memo(({ event, color, onClick }) => (
+  <Box
+    onClick={() => onClick(event)}
+    sx={{
+      minHeight: '32px',
+      backgroundColor: color,
+      color: 'white',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: '4px',
+      padding: '2px 4px',
+      marginTop: '4px',
+      fontSize: '12px',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      cursor: 'pointer',
+    }}
+  >
+    {`${event.startTime} - ${event.endTime}`}
+  </Box>
+));
 
 
 const DayView = ({ currentDate, events }) => {
@@ -153,72 +213,58 @@ const DayView = ({ currentDate, events }) => {
 };
 
 const MonthGrid = ({ daysArray, events, currentDate }) => {
-  const darkColors = [
-    '#5C6BC0',
-    '#3F51B5',
-    '#3949AB',
-    '#303F9F',
-    '#283593',
-    '#1A237E',
-    '#1976D2',
-    '#1565C0',
-    '#0D47A1',
-    '#7C4DFF',
-    '#651FFF',
-    '#6200EA',
-    '#304FFE',
-    '#00796B',
-    '#00695C',
-    '#004D40',
-    '#8D6E63',
-    '#795548',
-    '#6D4C41',
-    '#5D4037',
-    '#4E342E',
-    '#3E2723',
-    '#757575',
-    '#616161',
-    '#424242',
-    '#212121',
-    '#546E7A',
-    '#455A64',
-    '#37474F',
-    '#263238',
-  ];
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
-  const weeks = [];
-  for (let i = 0; i < daysArray.length; i += 7) {
-    weeks.push(daysArray.slice(i, i + 7));
-  }
+  const darkColors = useMemo(() => [
+    '#5C6BC0', '#3F51B5', '#3949AB', '#303F9F', '#283593', '#1A237E', '#1976D2', '#1565C0', '#0D47A1',
+    '#7C4DFF', '#651FFF', '#6200EA', '#304FFE', '#00796B', '#00695C', '#004D40', '#8D6E63', '#795548',
+    '#6D4C41', '#5D4037', '#4E342E', '#3E2723', '#757575', '#616161', '#424242', '#212121', '#546E7A',
+    '#455A64', '#37474F', '#263238',
+  ], []);
+
+  const weeks = useMemo(() => {
+    const weeksArray = [];
+    for (let i = 0; i < daysArray.length; i += 7) {
+      weeksArray.push(daysArray.slice(i, i + 7));
+    }
+    return weeksArray;
+  }, [daysArray]);
+
   const currentYear = dayjs(currentDate).year();
   const currentMonth = dayjs(currentDate).month() + 1;
 
-  const eventsForCurrentMonth = events.filter(event => {
-    return event.year === currentYear && event.month === currentMonth;
-  });
+  const eventsForCurrentMonth = useMemo(() => events.filter(event => (
+    event.year === currentYear && event.month === currentMonth
+  )), [events, currentYear, currentMonth]);
+
+  const handleEventClick = useCallback((event) => {
+    setSelectedEvent(event);
+    setOpenDialog(true);
+  }, []);
+
+  const handleCloseDialog = useCallback(() => {
+    setOpenDialog(false);
+    setSelectedEvent(null);
+  }, []);
 
   return (
-    <TableContainer component={Box}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <TableCell
-                key={day}
-                align="center"
-                size="medium"
-                sx={{ border: '1px solid #ddd' }}
-              >
-                <Typography variant="h6">{day}</Typography>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {weeks.map((week, rowIndex) => (
-            <TableRow key={rowIndex}>
-              {week.map(({ day, isCurrentMonth }, cellIndex) => {
-                return (
+    <>
+      <TableContainer component={Box}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <TableCell key={day} align="center" size="medium" sx={{ border: '1px solid #ddd' }}>
+                  <Typography variant="h6">{day}</Typography>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {weeks.map((week, rowIndex) => (
+              <TableRow key={rowIndex}>
+                {week.map(({ day, isCurrentMonth }, cellIndex) => (
                   <TableCell
                     key={cellIndex}
                     align="center"
@@ -230,9 +276,6 @@ const MonthGrid = ({ daysArray, events, currentDate }) => {
                       position: 'relative',
                       backgroundColor: isCurrentMonth ? 'inherit' : '#f0f0f0',
                       border: '1px solid #ddd',
-                      // '&:hover': {
-                      //   backgroundColor: isCurrentMonth ? '#ECF2FF' : '#f0f0f0',
-                      // },
                     }}
                   >
                     <Typography
@@ -247,39 +290,28 @@ const MonthGrid = ({ daysArray, events, currentDate }) => {
                       {day}
                     </Typography>
 
-                    {/* Render events for the current day */}
-                    {eventsForCurrentMonth.map((event, index) => {
-                      if (event.day === day) {
-                        const backgroundColor = darkColors[index % darkColors.length];
-                        return (<Box
+                    {eventsForCurrentMonth.map((event, index) => (
+                      event.day === day && (
+                        <EventCell
                           key={event.id}
-                          sx={{
-                            backgroundColor: backgroundColor,
-                            color: 'white',
-                            borderRadius: '4px',
-                            padding: '2px 4px',
-                            marginTop: '4px',
-                            fontSize: '12px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {`${event.startTime} - ${event.endTime}`}
-                        </Box>)
-                      }
-                    })}
+                          event={event}
+                          color={darkColors[index % darkColors.length]}
+                          onClick={handleEventClick}
+                        />
+                      )
+                    ))}
                   </TableCell>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <EventDialog event={selectedEvent} open={openDialog} onClose={handleCloseDialog} />
+    </>
   );
 };
-
 const WeekView = ({ events }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedTime, setSelectedTime] = useState('');
