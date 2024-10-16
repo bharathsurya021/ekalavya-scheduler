@@ -22,7 +22,7 @@ const ScreenManager = () => {
 
   const handleViewScreen = useCallback(
     (screen) => {
-      navigate('/scheduler', { state: { screen } });
+      navigate('/dashboard/screens/view/:id');
     },
     [navigate]
   );

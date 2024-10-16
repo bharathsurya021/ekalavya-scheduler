@@ -22,7 +22,7 @@ const ScreenCard = ({ title, id, onOptionClick }) => {
               {title}
             </Typography>
           </Grid>
-          <Grid item>
+          {/* <Grid item>
             <IconButton
               aria-controls="screen-options-menu"
               aria-haspopup="true"
@@ -30,7 +30,7 @@ const ScreenCard = ({ title, id, onOptionClick }) => {
             >
               <MoreVertOutlined />
             </IconButton>
-          </Grid>
+          </Grid> */}
         </Grid>
         <Menu
           id="screen-options-menu"
@@ -39,7 +39,7 @@ const ScreenCard = ({ title, id, onOptionClick }) => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          {['View', 'Rename', 'Edit', 'Preview', 'Delete'].map((option) => (
+          {['Preview'].map((option) => (
             <MenuItem key={option} onClick={() => { onOptionClick(option); handleMenuClose(); }}>
               {option}
             </MenuItem>
