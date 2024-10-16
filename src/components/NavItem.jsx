@@ -7,6 +7,7 @@ import {
   styled,
   ListItemText,
   useTheme,
+  ListItemButton,
 } from '@mui/material';
 
 const NavItem = ({ item, level, pathDirect, onClick }) => {
@@ -14,7 +15,7 @@ const NavItem = ({ item, level, pathDirect, onClick }) => {
   const theme = useTheme();
   const itemIcon = <Icon stroke={1.5} size="1.3rem" />;
 
-  const ListItemStyled = styled(ListItem)(() => ({
+  const ListItemStyled = styled(ListItemButton)(() => ({
     whiteSpace: 'nowrap',
     marginBottom: '2px',
     padding: '8px 10px',
@@ -39,7 +40,6 @@ const NavItem = ({ item, level, pathDirect, onClick }) => {
   return (
     <List component="li" disablePadding key={item.label}>
       <ListItemStyled
-        button={true}
         component={item.external ? 'a' : NavLink}
         to={item.path}
         href={item.external ? item.path : ''}
