@@ -15,16 +15,20 @@ export const AuthProvider = ({ children }) => {
     } else {
       setIsAuthenticated(false);
     }
-  }, []);
 
-  const login = (accessToken) => {
-    Cookies.set('access_token', accessToken, { expires: 1 / 48 });
+  }, [token, isAuthenticated]);
+
+  const login = (accessToken, expiryInSec) => {
+    Cookies.set('access_token', accessToken, { expires: expiryInSec / 86400 });
+    const expiryTime = new Date(new Date().getTime() + expiryInSec * 1000);
+    Cookies.set('expiry_time', expiryTime.toISOString());
     setToken(accessToken);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
     Cookies.remove('access_token');
+    Cookies.remove('expiry_time');
     setToken(null);
     setIsAuthenticated(false);
   };
